@@ -5,7 +5,7 @@ import useColorScheme from '../hooks/useColorScheme';
 
 export function useThemeColor(
     props: { light?: string; dark?: string },
-    colorName: keyof typeof colors.light & keyof typeof colors.dark
+    colorName: keyof typeof colors.light & keyof typeof colors.dark,
 ) {
   const theme = useColorScheme();
   const colorFromProps = props[theme];
@@ -47,6 +47,11 @@ export function SafeAreaView(props: SafeAreaViewProps) {
     return <SafeAreaView style={[{ backgroundColor }, style]} {...otherProps} />;
 }
 
-export function TextColor() {
-    return useThemeColor({ }, 'text');
+export function GetColors() {
+    const textColor = useThemeColor({ }, 'text');
+    const backgroundColor = useThemeColor({}, 'background');
+    return {
+        textColor,
+        backgroundColor
+    }
 }

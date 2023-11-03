@@ -77,9 +77,9 @@ export type ProfileStackScreenProps<Screen extends keyof ProfileStackScreenList>
 */
 
 export type AuthStackParamList = {
-  LogIn: undefined;
-  Register: undefined;
-  ForgotPassword: undefined
+  WelcomeScreen: undefined;
+  NameScreen: undefined;
+  EmailScreen: undefined
 };
 
 export type AuthStackScreenProps<Screen extends keyof AuthStackParamList> =
