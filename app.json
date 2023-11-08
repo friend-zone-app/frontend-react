@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Parties",
+    "slug": "parties",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "userInterfaceStyle": "automatic",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.parties.app"
+    },
+    "android": {
+      "userInterfaceStyle": "automatic",
+      "package": "com.parties.app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "369e14ce-3e16-4724-8007-132b35525bb4"
+      }
+    },
+    "plugin": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.1"
+          }
+        }
+      ]
+    ]
+  }
+}
