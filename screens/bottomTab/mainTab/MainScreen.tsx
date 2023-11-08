@@ -1,5 +1,5 @@
 import { MainStackScreenProps } from "../../../types/screens";
-import { GetColors, SafeAreaView, Text, View } from '../../../components/themed';
+import { GetColors, Text, View } from '../../../components/themed';
 import { StyleSheet } from "react-native";
 
 
@@ -7,7 +7,7 @@ export default function MainScreen({ navigation }: MainStackScreenProps<'MainScr
     const { textColor, backgroundColor } = GetColors();
 
     return (
-        <SafeAreaView
+        <View
             style={{
                 ...styles.container,
                 backgroundColor: backgroundColor,
@@ -23,7 +23,7 @@ export default function MainScreen({ navigation }: MainStackScreenProps<'MainScr
                     Welcome to Parties 🎉
                 </Text>
             </View>
-        </SafeAreaView>
+        </View>
     );
 }
 

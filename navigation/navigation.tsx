@@ -34,30 +34,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function RootNavigator() {
 
     const { token: tokenStorage } = useUserLocalStorage();
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const bootstrapAsync = async () => {
-            let token: string | null = null;
-
-            console.log("caleld bootstrap")
-            try {
-                token = tokenStorage.token;
-                if (!token) {
-                    throw new Error("No token found");
-                }
-                console.log("Finally", token)
-                setIsLoading(false);
-                return;
-            } catch (e) {
-                console.log("Error", e)
-                setIsLoading(false);
-                return;
-            }
-        };
-
-        bootstrapAsync();
-    }, [tokenStorage.token]);
 
     const authContext = useMemo(
         () => ({
@@ -73,7 +49,6 @@ function RootNavigator() {
                     console.log("Signin Function", username, email);
 
                     tokenStorage.setToken(username);
-                    setIsLoading(false);
                 } catch (error) {
                     console.error(error);
                     throw error;
@@ -95,13 +70,12 @@ function RootNavigator() {
     return (
         <AuthContext.Provider value={authContext}>
             <Stack.Navigator
+                initialRouteName="Root"
                 screenOptions={{
                     headerShown: false,
                 }}
             >
-                {isLoading ? (
-                    <Stack.Screen name="Splash" component={Splash} />
-                ) : tokenStorage.token ? (
+                {tokenStorage.token ? (
                     <>
                         <Stack.Screen
                             name="Root"
