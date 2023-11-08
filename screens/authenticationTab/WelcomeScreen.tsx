@@ -1,7 +1,6 @@
-import { StyleSheet, SafeAreaView, Button, Pressable, TouchableOpacity } from "react-native";
+import { StyleSheet, SafeAreaView, Button, TouchableOpacity } from "react-native";
 import { Text, View, GetColors } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
-import { StatusBar } from "expo-status-bar";
 
 export default function WelcomeScreen({
     navigation,
@@ -16,8 +15,6 @@ export default function WelcomeScreen({
             }}
         >
             <View style={styles.contain}>
-                <StatusBar style={"auto"} />
-
                 <Text
                     style={{
                         fontSize: 30,

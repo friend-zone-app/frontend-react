@@ -50,8 +50,10 @@ export function SafeAreaView(props: SafeAreaViewProps) {
 export function GetColors() {
     const textColor = useThemeColor({ }, 'text');
     const backgroundColor = useThemeColor({}, 'background');
+    const secondaryColor = useThemeColor({}, 'secondaryColor');
     return {
         textColor,
-        backgroundColor
+        backgroundColor,
+        secondaryColor
     }
 }

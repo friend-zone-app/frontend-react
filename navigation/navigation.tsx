@@ -2,18 +2,18 @@ import {
     DarkTheme,
     DefaultTheme,
     NavigationContainer,
-  } from "@react-navigation/native";
-  import { createNativeStackNavigator } from "@react-navigation/native-stack";
-  import React, { useEffect, useMemo, useReducer } from "react";
-  import { ColorSchemeName } from "react-native/types";
-  import { RootStackParamList } from "../types/screens";
-  import * as SecureStore from "expo-secure-store";
-  import BottomTabNavigator from "./BottomTab/BottomTab";
-  import NotFoundScreen from "../screens/root/NotFoundScreen";
-  import SettingModal from "../screens/root/SettingModal";
-  import AuthStackNavigator from "./Authentication/Authentication";
-  import Splash from "../components/splash";
-  import { AuthContext } from "../constants/AuthContext";
+} from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useEffect, useMemo, useReducer, useState } from "react";
+import { ColorSchemeName } from "react-native/types";
+import { RootStackParamList } from "../types/screens";
+import BottomTabNavigator from "./BottomTab/BottomTab";
+import NotFoundScreen from "../screens/root/NotFoundScreen";
+import SettingModal from "../screens/root/SettingModal";
+import AuthStackNavigator from "./Authentication/Authentication";
+import Splash from "../components/splash";
+import { AuthContext } from "../constants/AuthContext";
+import useUserLocalStorage from "../hooks/useLocalStorage";
 
 export default function Navigation({
     colorScheme,
@@ -32,193 +32,107 @@ export default function Navigation({
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
-  const [state, dispatch] = useReducer(
-    (prevState: any, action: any) => {
-      switch (action.type) {
-        case "RESTORE_TOKEN":
-          return {
-            ...prevState,
-            token: action.token,
-            isLoading: false,
-          };
-        case "SIGN_IN":
-          return {
-            ...prevState,
-            token: action.token,
-            isLoading: false,
-          };
-        case "SIGN_OUT":
-          return {
-            ...prevState,
-            isSignout: true,
-            token: action.token,
-          };
-        case "SIGN_UP":
-          return {
-            ...prevState,
-            isSignout: true,
-            token: null,
-          };
-      }
-    },
-    {
-      isLoading: true,
-      isSignout: false,
-      token: null,
-    }
-  );
 
-  useEffect(() => {
-    const bootstrapAsync = async () => {
-      let token: string | null = null;
+    const { token: tokenStorage } = useUserLocalStorage();
+    const [isLoading, setIsLoading] = useState(true);
 
-      try {
-        console.log(token)
-      } catch (e) {
-        console.log(e)
-        token = null;
-      } finally {
-        console.log("Restore token")
-        dispatch({
-          type: "RESTORE_TOKEN",
-          token: token,
-        });
-      }
-    };
+    useEffect(() => {
+        const bootstrapAsync = async () => {
+            let token: string | null = null;
 
-    bootstrapAsync()
-  }, [state.token]);
+            console.log("caleld bootstrap")
+            try {
+                token = tokenStorage.token;
+                if (!token) {
+                    throw new Error("No token found");
+                }
+                console.log("Finally", token)
+                setIsLoading(false);
+                return;
+            } catch (e) {
+                console.log("Error", e)
+                setIsLoading(false);
+                return;
+            }
+        };
 
-  const authContext = useMemo(
-    () => ({
-      signIn: async ({
-        username,
-        password,
-      }: {
-        username: string;
-        password: string;
-      }) => {
-        try {
-          const response = await fetch("https://api.txzje.xyz/auth/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
+        bootstrapAsync();
+    }, [tokenStorage.token]);
+
+    const authContext = useMemo(
+        () => ({
+            signUp: async ({
+                username,
+                email,
+            }: {
+                username: string;
+                email: string;
+            }) => {
+                try {
+                    const token = username;
+                    console.log("Signin Function", username, email);
+
+                    tokenStorage.setToken(username);
+                    setIsLoading(false);
+                } catch (error) {
+                    console.error(error);
+                    throw error;
+                }
             },
-            body: JSON.stringify({ username, password }),
-          });
-
-          if (!response.ok) {
-            throw new Error("Invalid username or password");
-          }
-
-          const token = await response.json();
-
-          await SecureStore.setItemAsync("token", token.token.accessToken);
-          await SecureStore.setItemAsync("refreshToken", token.token.refreshToken);
-
-          dispatch({ type: "SIGN_IN", token });
-        } catch (error) {
-          console.error(error);
-          throw error;
-        }
-      },
-      signOut: async () => {
-        await SecureStore.deleteItemAsync("token");
-        await SecureStore.deleteItemAsync("refreshToken");
-        dispatch({ type: "SIGN_OUT" });
-      },
-      signUp: async (data: any) => {
-        try {
-          const { navigate, ...userData } = data;
-
-          const response = await fetch("https://api.txzje.xyz/auth/register", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
+            signOut: async () => {
+                tokenStorage.setToken(null);
             },
-            body: JSON.stringify(userData),
-          });
+            refreshToken: async (data: any): Promise<boolean> => {
+                return true;
+            },
+            getToken: (): string => {
+                return tokenStorage.token || "";
+            },
+        }),
+        []
+    );
 
-          if (!response.ok) {
-            throw new Error("Username already exists");
-          }
-
-          const token = await response.json();
-
-          if (token.status === 202) {
-            navigate("LogIn");
-          } else {
-            // Error
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      },
-      refreshToken: async(data: any): Promise<boolean> => {
-        const refreshToken = await SecureStore.getItemAsync("refreshToken")
-        if(!refreshToken) return false;
-        const response = await fetch("https://api.txzje.xyz/auth/refresh", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Token": refreshToken,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Invalid refresh token, please login again");
-        }
-
-        const token = await response.json();
-
-        await SecureStore.setItemAsync("token", token.token.accessToken);
-        await SecureStore.setItemAsync("refreshToken", token.token.refreshToken);
-
-        return true;
-      },
-      getToken: (): string => {
-        console.log(state.token)
-        return state.token
-      }
-    }),
-    []
-  );
-
-  return (
-    <AuthContext.Provider value={authContext}>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        {state.isLoading ? (
-          <Stack.Screen name="Splash" component={Splash} />
-        ) : state.token != null ? (
-          <>
-            <Stack.Screen
-              name="Root"
-              component={BottomTabNavigator}
-              options={{ header: () => null }}
-            />
-            <Stack.Screen
-              name="NotFound"
-              component={NotFoundScreen}
-              options={{ title: "Oops!" }}
-            />
-            <Stack.Group
-              screenOptions={{ presentation: "modal", headerShown: true }}
+    return (
+        <AuthContext.Provider value={authContext}>
+            <Stack.Navigator
+                screenOptions={{
+                    headerShown: false,
+                }}
             >
-              <Stack.Screen name="Setting" component={SettingModal} />
-            </Stack.Group>
-          </>
-        ) : (
-          <Stack.Screen
-            name="Authentication"
-            component={AuthStackNavigator}
-            options={{ header: () => null }}
-          />
-        )}
-      </Stack.Navigator>
-    </AuthContext.Provider>
-  );
+                {isLoading ? (
+                    <Stack.Screen name="Splash" component={Splash} />
+                ) : tokenStorage.token ? (
+                    <>
+                        <Stack.Screen
+                            name="Root"
+                            component={BottomTabNavigator}
+                            options={{ header: () => null }}
+                        />
+                        <Stack.Screen
+                            name="NotFound"
+                            component={NotFoundScreen}
+                            options={{ title: "Oops!" }}
+                        />
+                        <Stack.Group
+                            screenOptions={{
+                                presentation: "modal",
+                                headerShown: true,
+                            }}
+                        >
+                            <Stack.Screen
+                                name="Setting"
+                                component={SettingModal}
+                            />
+                        </Stack.Group>
+                    </>
+                ) : (
+                    <Stack.Screen
+                        name="Authentication"
+                        component={AuthStackNavigator}
+                        options={{ header: () => null }}
+                    />
+                )}
+            </Stack.Navigator>
+        </AuthContext.Provider>
+    );
 }

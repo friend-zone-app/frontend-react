@@ -1,8 +1,12 @@
 import { RootStackScreenProps } from "../../types/screens";
-import { Text } from '../../components/themed';
+import { Text, View } from "../../components/themed";
 
-export default function NotFoundScreen({ navigation }: RootStackScreenProps<'NotFound'>) {
+export default function NotFoundScreen({
+    navigation,
+}: RootStackScreenProps<"NotFound">) {
     return (
-        <Text>Not Found!</Text>
-    )
+        <View>
+            <Text>Not Found!</Text>
+        </View>
+    );
 }

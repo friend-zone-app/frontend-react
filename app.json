@@ -15,10 +15,14 @@
     ],
     "userInterfaceStyle": "automatic",
     "ios": {
-      "userInterfaceStyle": "automatic"
+      "userInterfaceStyle": "automatic",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
-      "userInterfaceStyle": "automatic"
+      "userInterfaceStyle": "automatic",
+      "package": "com.parties.app"
     }
   }
 }

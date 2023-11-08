@@ -1,26 +1,25 @@
 import { AuthStackScreenProps } from "../../types/screens";
-import { GetColors, SafeAreaView, Text, View } from "../../components/themed";
-import { StatusBar } from "expo-status-bar";
-import { Button, StyleSheet, TextInput } from "react-native";
-import { useState } from "react";
+import { GetColors, Text, View } from "../../components/themed";
+import { Button, StyleSheet } from "react-native";
+import { useContext, useState } from "react";
 import TextInput2 from "../../components/textInput";
+import { RegisterContext } from "../../constants/RegisterContext";
 
 export default function NameScreen({
     navigation,
 }: AuthStackScreenProps<"NameScreen">) {
-    const { textColor, backgroundColor } = GetColors();
+    const { textColor, secondaryColor } = GetColors();
     const [username, setUsername] = useState("");
+    const { setUsername: setUsernameContext } = useContext(RegisterContext);
 
     return (
         <View style={styles.contain}>
-            <StatusBar style={"auto"} />
-
             <View>
                 <Text
                     style={{
                         fontSize: 30,
                         fontWeight: "600",
-                        alignContent: "center",
+                        textAlign: "center",
                     }}
                 >
                     What is your name?
@@ -35,6 +34,7 @@ export default function NameScreen({
                 <TextInput2
                     style={{
                         ...styles.input,
+                        fontSize: 20,
                     }}
                     placeholder="Your username..."
                     placeholderTextColor={textColor}
@@ -42,14 +42,17 @@ export default function NameScreen({
                     keyboardType="default"
                     maxLength={20}
                     value={username}
-                    placeholderStyle={{ fontSize: 20 }}
+                    placeholderStyle={{ fontSize: 20, color: secondaryColor }}
                     onChangeText={setUsername}
                     autoFocus={true}
                 />
             </View>
             <Button
                 title="Continue"
-                onPress={() => navigation.push("EmailScreen")}
+                onPress={() => {
+                    setUsernameContext(username);
+                    navigation.push("EmailScreen");
+                }}
             />
         </View>
     );

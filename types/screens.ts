@@ -7,7 +7,8 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    interface RootParamList extends RootStackParamList {
+    }
   }
 }
 
@@ -19,7 +20,7 @@ export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
   Setting: undefined;
   NotFound: undefined;
-  Authentication: undefined;
+  Authentication: NavigatorScreenParams<AuthStackParamList> | undefined;
   Splash: undefined
 };
 
@@ -79,7 +80,8 @@ export type ProfileStackScreenProps<Screen extends keyof ProfileStackScreenList>
 export type AuthStackParamList = {
   WelcomeScreen: undefined;
   NameScreen: undefined;
-  EmailScreen: undefined
+  EmailScreen: undefined;
+  AuthScreen: undefined;
 };
 
 export type AuthStackScreenProps<Screen extends keyof AuthStackParamList> =

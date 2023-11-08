@@ -1,8 +1,9 @@
-import React, { Component, ChangeEvent } from 'react';
+import React, { Component } from 'react';
+import { TextStyle, StyleProp } from "react-native"
 import { TextInput, TextInputProps, NativeSyntheticEvent, TextInputChangeEventData } from 'react-native';
 
 interface TextInput2Props extends TextInputProps {
-  placeholderStyle?: object;
+  placeholderStyle?: StyleProp<TextStyle>;
   onChange?: (ev: NativeSyntheticEvent<TextInputChangeEventData>) => void;
 }
 
