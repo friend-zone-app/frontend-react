@@ -1,9 +1,12 @@
 import { AuthStackScreenProps } from "../../types/screens";
 import { GetColors, Text, View } from "../../components/themed";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button, StyleSheet } from "react-native";
 import TextInput2 from "../../components/textInput";
 import { RegisterContext } from "../../constants/RegisterContext";
+import { useLazyQuery } from "@apollo/client";
+import { REQUEST_AUTHENTICATION } from "../../graphql/queries/requestAuthentication";
+import Toast from "react-native-root-toast";
 
 export default function EmailScreen({
     route,
@@ -12,6 +15,35 @@ export default function EmailScreen({
     const { textColor, secondaryColor } = GetColors();
     const { setEmail: setEmailContext } = useContext(RegisterContext);
     const [email, setEmail] = useState("");
+
+    const [requestEmail, { called, loading, error, data }] = useLazyQuery(
+        REQUEST_AUTHENTICATION
+    );
+
+    useEffect(() => {
+        if (error && called) {
+            const queryError = error?.graphQLErrors[0];
+            Toast.show(
+                queryError.message ||
+                    "Failed to request email authentication, please try again later!",
+                {
+                    duration: Toast.durations.LONG,
+                }
+            );
+            return
+        }
+        const alert = Toast.show(
+            "Requesting a verification code! Check your E-Mail",
+            {
+                duration: Toast.durations.LONG,
+            }
+        );
+        if (!loading && data && called) {
+            Toast.hide(alert)
+            setEmailContext(email);
+            navigation.push("AuthScreen");
+        }
+    }, [error, loading, data, called, email, navigation]);
 
     return (
         <View style={styles.contain}>
@@ -51,8 +83,7 @@ export default function EmailScreen({
             <Button
                 title="Continue"
                 onPress={() => {
-                    setEmailContext(email);
-                    navigation.push("AuthScreen");
+                    requestEmail({ variables: { email } });
                 }}
             />
         </View>

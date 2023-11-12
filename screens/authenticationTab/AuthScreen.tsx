@@ -1,18 +1,45 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GetColors, Text, View } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
 import { RegisterContext } from "../../constants/RegisterContext";
 import { Button, StyleSheet } from "react-native";
 import TextInput2 from "../../components/textInput";
 import { AuthContext } from "../../constants/AuthContext";
+import { useLazyQuery } from "@apollo/client";
+import Toast from "react-native-root-toast";
+import { VALIDATE_AUTHENTICATION } from "../../graphql/queries/requestAuthentication";
 
 export default function AuthScreen({
     navigation,
-}:  AuthStackScreenProps<"AuthScreen">) {
+}: AuthStackScreenProps<"AuthScreen">) {
     const { textColor, secondaryColor } = GetColors();
     const [authCode, setAuthCode] = useState("");
     const { signUp } = useContext(AuthContext);
     const { getUsername, getEmail } = useContext(RegisterContext);
+    const username = getUsername();
+    const email = getEmail();
+
+    const [execute, { called, loading, error, data }] = useLazyQuery(
+        VALIDATE_AUTHENTICATION
+    );
+
+    useEffect(() => {
+        if (error && called) {
+            const queryError = error?.graphQLErrors[0];
+            Toast.show(
+                queryError.message ||
+                    "Failed to authenticate OTP code, please try again later!",
+                {
+                    duration: Toast.durations.LONG,
+                }
+            );
+        }
+
+        if (!loading && data && called) {
+            const respond = data.validateOtp;
+            signUp({ user: respond.user, tokens: respond.token });
+        }
+    }, [error, loading, data, called, email, navigation]);
 
     return (
         <View style={styles.contain}>
@@ -71,9 +98,14 @@ export default function AuthScreen({
             <Button
                 title="Continue"
                 onPress={() => {
-                    const username = getUsername();
-                    const email = getEmail();
-                    signUp({ username, email });
+                    
+                    execute({
+                        variables: {
+                            username,
+                            email,
+                            code: authCode,
+                        },
+                    });
                 }}
             />
         </View>
