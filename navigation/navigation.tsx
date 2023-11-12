@@ -11,9 +11,20 @@ import BottomTabNavigator from "./BottomTab/BottomTab";
 import NotFoundScreen from "../screens/root/NotFoundScreen";
 import SettingModal from "../screens/root/SettingModal";
 import AuthStackNavigator from "./Authentication/Authentication";
-import Splash from "../components/splash";
 import { AuthContext } from "../constants/AuthContext";
 import useUserLocalStorage from "../hooks/useLocalStorage";
+import { User } from "../types/user";
+import {
+    createHttpLink,
+    useApolloClient,
+    concat,
+    ApolloLink,
+    useQuery,
+    useLazyQuery,
+} from "@apollo/client";
+import { GET_SELF } from "../graphql/queries/getUser";
+import Splash from "../components/splash";
+import { setContext } from '@apollo/client/link/context';
 
 export default function Navigation({
     colorScheme,
@@ -32,36 +43,77 @@ export default function Navigation({
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
+    const { token: tokenStorage, user: userStorage } = useUserLocalStorage();
+    const [loading, setLoading] = useState(true);
+    const client = useApolloClient();
+    
+    const [query, { called, loading: queryLoading, error, data }] = useLazyQuery(GET_SELF);
 
-    const { token: tokenStorage } = useUserLocalStorage();
+    useEffect(() => {
+        const accessToken = tokenStorage.accessToken;
+        if (!accessToken) {
+            setLoading(false);
+            return
+        }
+        query({ context: {
+            headers: {
+                "Authorization": "Bearer " + accessToken
+            }
+        }})
+        if (queryLoading) return;
+        setLoading(false);
+        if (error && called) {
+            tokenStorage.setAccessToken(null);
+            tokenStorage.setRefreshToken(null);
+        } else if (!error && called && data) {
+            const userData = data.me;
+            userStorage.setUserData(userData);
+        }
+    }, [called, queryLoading, error, data, loading]);
 
     const authContext = useMemo(
         () => ({
             signUp: async ({
-                username,
-                email,
+                user,
+                tokens,
             }: {
-                username: string;
-                email: string;
+                user: User;
+                tokens: { accessToken: string; refreshToken: string };
             }) => {
                 try {
-                    const token = username;
-                    console.log("Signin Function", username, email);
-
-                    tokenStorage.setToken(username);
+                    userStorage.setUserData(user);
+                    tokenStorage.setAccessToken(tokens.accessToken);
+                    tokenStorage.setRefreshToken(tokens.refreshToken);
+                    const httpLink = createHttpLink({
+                        uri: process.env.EXPO_PUBLIC_GRAPHQL_URI,
+                    });
+                    const link = setContext(async (operation, prevContext) => {
+                        return {
+                            ...prevContext,
+                            headers: {
+                                ...prevContext.headers,
+                                Authorization: `Bearer ${tokenStorage.accessToken}`
+                            }
+                        };
+                    });
+                    client.setLink(link.concat(httpLink));
                 } catch (error) {
                     console.error(error);
                     throw error;
                 }
             },
             signOut: async () => {
-                tokenStorage.setToken(null);
+                tokenStorage.setAccessToken(null);
+                tokenStorage.setRefreshToken(null);
             },
             refreshToken: async (data: any): Promise<boolean> => {
                 return true;
             },
-            getToken: (): string => {
-                return tokenStorage.token || "";
+            getAccessToken: (): string => {
+                return tokenStorage.accessToken || "";
+            },
+            getRefreshToken: (): string => {
+                return tokenStorage.refreshToken || "";
             },
         }),
         []
@@ -75,7 +127,13 @@ function RootNavigator() {
                     headerShown: false,
                 }}
             >
-                {tokenStorage.token ? (
+                {loading ? (
+                    <Stack.Screen
+                        name="Splash"
+                        component={Splash}
+                        options={{ header: () => null }}
+                    />
+                ) : tokenStorage.accessToken ? (
                     <>
                         <Stack.Screen
                             name="Root"

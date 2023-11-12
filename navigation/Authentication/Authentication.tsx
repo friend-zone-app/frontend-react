@@ -35,7 +35,6 @@ export default function AuthStackNavigator() {
     const registerMemo = useMemo(
         () => ({
             setUsername: (username: string) => {
-                console.log(username);
                 dispatch({
                     type: "SET_USERNAME",
                     username,
@@ -45,14 +44,12 @@ export default function AuthStackNavigator() {
                 return state.username;
             },
             setEmail: (email: string) => {
-                console.log(email);
                 dispatch({
                     type: "SET_EMAIL",
                     email,
                 });
             },
             getEmail: (): string => {
-                console.log(state.email, state)
                 return state.email
             }
         }),
