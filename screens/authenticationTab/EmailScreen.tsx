@@ -1,7 +1,7 @@
 import { AuthStackScreenProps } from "../../types/screens";
 import { GetColors, Text, View } from "../../components/themed";
 import { useContext, useEffect, useState } from "react";
-import { Button, StyleSheet } from "react-native";
+import { Button, StyleSheet, TouchableOpacity } from "react-native";
 import TextInput2 from "../../components/textInput";
 import { RegisterContext } from "../../constants/RegisterContext";
 import { useLazyQuery } from "@apollo/client";
@@ -12,7 +12,7 @@ export default function EmailScreen({
     route,
     navigation,
 }: AuthStackScreenProps<"EmailScreen">) {
-    const { textColor, secondaryColor } = GetColors();
+    const { textColor, secondaryColor, backgroundColor } = GetColors();
     const { setEmail: setEmailContext } = useContext(RegisterContext);
     const [email, setEmail] = useState("");
 
@@ -30,18 +30,20 @@ export default function EmailScreen({
                     duration: Toast.durations.LONG,
                 }
             );
-            return
+            return;
         }
-        const alert = Toast.show(
-            "Requesting a verification code! Check your E-Mail",
-            {
-                duration: Toast.durations.LONG,
+        if (called) {
+            const alert = Toast.show(
+                "Requesting a verification code! Check your E-Mail",
+                {
+                    duration: Toast.durations.LONG,
+                }
+            );
+            if (!loading && data && called) {
+                Toast.hide(alert);
+                setEmailContext(email);
+                navigation.push("AuthScreen");
             }
-        );
-        if (!loading && data && called) {
-            Toast.hide(alert)
-            setEmailContext(email);
-            navigation.push("AuthScreen");
         }
     }, [error, loading, data, called, email, navigation]);
 
@@ -68,6 +70,8 @@ export default function EmailScreen({
                     style={{
                         fontSize: 20,
                         ...styles.input,
+                        color: textColor,
+                        fontWeight: "600",
                     }}
                     placeholder="Your email address..."
                     placeholderTextColor={textColor}
@@ -80,12 +84,26 @@ export default function EmailScreen({
                     autoFocus={true}
                 />
             </View>
-            <Button
-                title="Continue"
-                onPress={() => {
-                    requestEmail({ variables: { email } });
+            <TouchableOpacity
+                onPress={() => requestEmail({ variables: { email } })}
+                style={{
+                    marginTop: 10,
+                    backgroundColor: textColor,
+                    padding: 5,
+                    paddingHorizontal: 20,
+                    borderRadius: 10,
                 }}
-            />
+            >
+                <Text
+                    style={{
+                        fontSize: 20,
+                        color: backgroundColor,
+                        fontWeight: "600",
+                    }}
+                >
+                    Continue
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 }

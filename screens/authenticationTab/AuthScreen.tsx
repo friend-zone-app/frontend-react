@@ -81,6 +81,8 @@ export default function AuthScreen({
                     style={{
                         fontSize: 20,
                         ...styles.input,
+                        color: textColor,
+                        fontWeight: "600",
                     }}
                     placeholder="Code"
                     placeholderTextColor={textColor}
@@ -98,7 +100,6 @@ export default function AuthScreen({
             <Button
                 title="Continue"
                 onPress={() => {
-                    
                     execute({
                         variables: {
                             username,

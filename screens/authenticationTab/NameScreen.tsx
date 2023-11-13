@@ -1,6 +1,6 @@
 import { AuthStackScreenProps } from "../../types/screens";
 import { GetColors, Text, View } from "../../components/themed";
-import { Button, StyleSheet } from "react-native";
+import { Button, StyleSheet, TouchableOpacity } from "react-native";
 import { useContext, useState } from "react";
 import TextInput2 from "../../components/textInput";
 import { RegisterContext } from "../../constants/RegisterContext";
@@ -8,7 +8,7 @@ import { RegisterContext } from "../../constants/RegisterContext";
 export default function NameScreen({
     navigation,
 }: AuthStackScreenProps<"NameScreen">) {
-    const { textColor, secondaryColor } = GetColors();
+    const { textColor, secondaryColor, backgroundColor } = GetColors();
     const [username, setUsername] = useState("");
     const { setUsername: setUsernameContext } = useContext(RegisterContext);
 
@@ -35,6 +35,8 @@ export default function NameScreen({
                     style={{
                         ...styles.input,
                         fontSize: 20,
+                        color: textColor,
+                        fontWeight: "600",
                     }}
                     placeholder="Your username..."
                     placeholderTextColor={textColor}
@@ -47,13 +49,29 @@ export default function NameScreen({
                     autoFocus={true}
                 />
             </View>
-            <Button
-                title="Continue"
+            <TouchableOpacity
                 onPress={() => {
                     setUsernameContext(username);
                     navigation.push("EmailScreen");
                 }}
-            />
+                style={{
+                    marginTop: 10,
+                    backgroundColor: textColor,
+                    padding: 5,
+                    paddingHorizontal: 20,
+                    borderRadius: 10,
+                }}
+            >
+                <Text
+                    style={{
+                        fontSize: 20,
+                        color: backgroundColor,
+                        fontWeight: "600",
+                    }}
+                >
+                    Continue
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 }

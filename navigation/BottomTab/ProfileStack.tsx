@@ -3,14 +3,14 @@ import { View, Pressable } from "react-native";
 import Icon from "../../components/icons";
 import colors from "../../constants/colors";
 import useColorScheme from "../../hooks/useColorScheme";
-import { Text } from '../../components/themed'
+import { GetColors, Text, useThemeColor } from '../../components/themed'
 import MainScreenProfileTabScreen from "../../screens/bottomTab/profileTab/MainScreen";
 import { ProfileStackScreenList, ProfileStackScreenProps } from "../../types/screens";
 
 const Stack = createNativeStackNavigator<ProfileStackScreenList>();
 
 export default function ProfileTabStackNavigator() {
-  const colorScheme = useColorScheme();
+  const { textColor } = GetColors()
 
   return (
     <Stack.Navigator
@@ -33,7 +33,7 @@ export default function ProfileTabStackNavigator() {
                 <Icon
                   name="th-large"
                   size={25}
-                  color={colors[colorScheme].text}
+                  color={textColor}
                 />
               </Pressable>
               <Pressable
@@ -41,7 +41,7 @@ export default function ProfileTabStackNavigator() {
                   navigation.navigate("Setting");
                 }}
               >
-                <Icon name="gear" size={25} color={colors[colorScheme].text} />
+                <Icon name="gear" size={25} color={textColor} />
               </Pressable>
             </View>
           );
