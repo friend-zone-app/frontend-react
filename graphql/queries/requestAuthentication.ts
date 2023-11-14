@@ -26,3 +26,12 @@ export const VALIDATE_AUTHENTICATION = gql`
         }
     }
 `;
+
+export const REFRESH_TOKEN = gql`
+    query refreshToken {
+        refreshToken {
+            accessToken
+            refreshToken
+        }
+    }
+`

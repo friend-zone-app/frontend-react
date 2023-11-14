@@ -24,7 +24,8 @@ import {
 } from "@apollo/client";
 import { GET_SELF } from "../graphql/queries/getUser";
 import Splash from "../components/splash";
-import { setContext } from '@apollo/client/link/context';
+import { setContext } from "@apollo/client/link/context";
+import { REFRESH_TOKEN } from "../graphql/queries/requestAuthentication";
 
 export default function Navigation({
     colorScheme,
@@ -45,31 +46,100 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function RootNavigator() {
     const { token: tokenStorage, user: userStorage } = useUserLocalStorage();
     const [loading, setLoading] = useState(true);
+    const [doRefresh, setDoRefresh] = useState(false);
     const client = useApolloClient();
-    
-    const [query, { called, loading: queryLoading, error, data }] = useLazyQuery(GET_SELF);
+
+    const [
+        query,
+        {
+            called: queryCalled,
+            loading: queryLoading,
+            error: queryError,
+            data: queryData,
+            refetch: queryRefetch,
+        },
+    ] = useLazyQuery(GET_SELF);
+    const [
+        refresh,
+        {
+            called: refreshCalled,
+            loading: refreshLoading,
+            error: refreshError,
+            data: refreshData,
+        },
+    ] = useLazyQuery(REFRESH_TOKEN);
 
     useEffect(() => {
         const accessToken = tokenStorage.accessToken;
-        if (!accessToken) {
+        const refreshToken = tokenStorage.refreshToken;
+
+        console.log(accessToken, refreshToken)
+
+        if (!accessToken || !refreshToken) {
             setLoading(false);
-            return
+            return;
         }
-        query({ context: {
-            headers: {
-                "Authorization": "Bearer " + accessToken
-            }
-        }})
+
+        if (!queryCalled) {
+            query({
+                context: {
+                    headers: {
+                        Authorization: "Bearer " + accessToken,
+                    },
+                },
+            });
+        }
+
         if (queryLoading) return;
+
         setLoading(false);
-        if (error && called) {
-            tokenStorage.setAccessToken(null);
-            tokenStorage.setRefreshToken(null);
-        } else if (!error && called && data) {
-            const userData = data.me;
+
+        if (queryError && queryCalled) {
+            const errorMessage = queryError.graphQLErrors[0];
+            if (errorMessage.message.startsWith("[408]") && refreshToken) {
+                setDoRefresh(true);
+            } else {
+                tokenStorage.setAccessToken(null);
+                tokenStorage.setRefreshToken(null);
+            }
+        } else if (!queryError && queryCalled && queryData) {
+            const userData = queryData.me;
+            console.log(userData)
             userStorage.setUserData(userData);
         }
-    }, [called, queryLoading, error, data, loading]);
+    }, [queryCalled, queryLoading, queryError, queryData, loading]);
+
+    useEffect(() => {
+        if (!doRefresh) return;
+
+        if (!refreshCalled) {
+            refresh({
+                context: {
+                    headers: {
+                        Authorization: "Bearer " + tokenStorage.refreshToken,
+                    },
+                },
+            });
+        }
+
+        if (refreshLoading) return;
+
+        if (refreshError && refreshCalled) {
+            tokenStorage.setAccessToken(null);
+            tokenStorage.setRefreshToken(null);
+        } else if (!refreshError && refreshData && refreshCalled) {
+            const newTokens = refreshData.refreshToken;
+            tokenStorage.setAccessToken(newTokens.accessToken);
+            tokenStorage.setRefreshToken(newTokens.refreshToken);
+            queryRefetch({
+                context: {
+                    headers: {
+                        Authorization: "Bearer " + newTokens.accessToken,
+                    },
+                },
+            });
+        }
+    }, [doRefresh, refreshCalled, refreshLoading, refreshError, refreshData]);
 
     const authContext = useMemo(
         () => ({
@@ -92,8 +162,8 @@ function RootNavigator() {
                             ...prevContext,
                             headers: {
                                 ...prevContext.headers,
-                                Authorization: `Bearer ${tokenStorage.accessToken}`
-                            }
+                                Authorization: `Bearer ${tokenStorage.accessToken}`,
+                            },
                         };
                     });
                     client.setLink(link.concat(httpLink));
