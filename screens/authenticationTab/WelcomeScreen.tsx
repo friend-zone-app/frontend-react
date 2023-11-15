@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import { Text, View, GetColors } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
+import Button from "../../components/button";
 
 export default function WelcomeScreen({
     navigation,
@@ -27,22 +28,7 @@ export default function WelcomeScreen({
                 >
                     Welcome to Parties 🎉
                 </Text>
-                <TouchableOpacity
-                    onPress={() => navigation.push("NameScreen")}
-                    style={{
-                        marginTop: 10,
-                        backgroundColor: textColor,
-                        padding: 5,
-                        paddingHorizontal: 20,
-                        borderRadius: 10,
-                    }}
-                >
-                    <Text style={{
-                        fontSize: 20,
-                        color: backgroundColor,
-                        fontWeight: "600",
-                    }} >Continue</Text>
-                </TouchableOpacity>
+                <Button reference={() => navigation.push("NameScreen")} placeholder="Continue"/>
             </View>
         </SafeAreaView>
     );

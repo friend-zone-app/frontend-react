@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Pressable } from "react-native";
-import { Text, View } from "../../components/themed";
+import { GetColors, Text, View } from "../../components/themed";
 import Icon from "../../components/icons";
 import colors from "../../constants/colors";
 import useColorScheme from "../../hooks/useColorScheme";
@@ -14,7 +14,7 @@ import {
 const Stack = createNativeStackNavigator<MainStackScreenList>();
 
 export default function MainTabStackNavigator() {
-  const colorScheme = useColorScheme();
+  const { backgroundColor, tintColor } = GetColors();
 
   return (
     <Stack.Navigator
@@ -22,11 +22,15 @@ export default function MainTabStackNavigator() {
       screenOptions={({ navigation }: MainStackScreenProps<any>) => ({
         title: "",
         headerTitle: "",
+        headerStyle:{
+          backgroundColor
+        },
         headerRight: () => {
           return (
             <View
               style={{
-                flexDirection: "row"
+                flexDirection: "row",
+                backgroundColor: "none"
               }}
             >
               <Pressable
@@ -34,25 +38,30 @@ export default function MainTabStackNavigator() {
                   marginRight: 15,
                 }}
               >
-                <Icon name="th-large" size={25} color={colors[colorScheme].text} />
+                <Icon name="th-large" size={25} color={tintColor} />
               </Pressable>
               <Pressable
                 onPress={() => {
                   navigation.navigate("Setting");
                 }}
               >
-                <Icon name="gear" size={25} color={colors[colorScheme].text} />
+                <Icon name="gear" size={25} color={tintColor} />
               </Pressable>
             </View>
           );
         },
         headerLeft: () => {
           return (
-            <View>
+            <View
+              style={{
+                backgroundColor: "none"
+              }}
+            >
               <Text
                 style={{
                   fontSize: 20,
                   fontWeight: "600",
+                  backgroundColor: "transparent"
                 }}
               >
                 Parties

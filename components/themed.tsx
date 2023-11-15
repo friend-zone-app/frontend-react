@@ -51,9 +51,11 @@ export function GetColors() {
     const textColor = useThemeColor({ }, 'text');
     const backgroundColor = useThemeColor({}, 'background');
     const secondaryColor = useThemeColor({}, 'secondaryColor');
+    const tintColor = useThemeColor({}, "tint");
     return {
         textColor,
         backgroundColor,
-        secondaryColor
+        secondaryColor,
+        tintColor
     }
 }

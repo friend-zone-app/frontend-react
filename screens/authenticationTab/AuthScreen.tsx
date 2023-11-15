@@ -2,12 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import { GetColors, Text, View } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
 import { RegisterContext } from "../../constants/RegisterContext";
-import { Button, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import TextInput2 from "../../components/textInput";
 import { AuthContext } from "../../constants/AuthContext";
 import { useLazyQuery } from "@apollo/client";
 import Toast from "react-native-root-toast";
 import { VALIDATE_AUTHENTICATION } from "../../graphql/queries/requestAuthentication";
+import Button from "../../components/button";
 
 export default function AuthScreen({
     navigation,
@@ -98,16 +99,14 @@ export default function AuthScreen({
                 />
             </View>
             <Button
-                title="Continue"
-                onPress={() => {
-                    execute({
-                        variables: {
-                            username,
-                            email,
-                            code: authCode,
-                        },
-                    });
-                }}
+                reference={() => execute({
+                    variables: {
+                        username,
+                        email,
+                        code: authCode,
+                    },
+                })}
+                placeholder="Continue"
             />
         </View>
     );

@@ -1,9 +1,10 @@
 import { AuthStackScreenProps } from "../../types/screens";
 import { GetColors, Text, View } from "../../components/themed";
-import { Button, StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet } from "react-native";
 import { useContext, useState } from "react";
 import TextInput2 from "../../components/textInput";
 import { RegisterContext } from "../../constants/RegisterContext";
+import Button from "../../components/button";
 
 export default function NameScreen({
     navigation,
@@ -49,29 +50,13 @@ export default function NameScreen({
                     autoFocus={true}
                 />
             </View>
-            <TouchableOpacity
-                onPress={() => {
+            <Button
+                reference={() => {
                     setUsernameContext(username);
                     navigation.push("EmailScreen");
                 }}
-                style={{
-                    marginTop: 10,
-                    backgroundColor: textColor,
-                    padding: 5,
-                    paddingHorizontal: 20,
-                    borderRadius: 10,
-                }}
-            >
-                <Text
-                    style={{
-                        fontSize: 20,
-                        color: backgroundColor,
-                        fontWeight: "600",
-                    }}
-                >
-                    Continue
-                </Text>
-            </TouchableOpacity>
+                placeholder="Continue"
+            />
         </View>
     );
 }
