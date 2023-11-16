@@ -14,7 +14,7 @@ import {
 const Stack = createNativeStackNavigator<MainStackScreenList>();
 
 export default function MainTabStackNavigator() {
-  const { backgroundColor, tintColor } = GetColors();
+  const { backgroundColor, textColor } = GetColors();
 
   return (
     <Stack.Navigator
@@ -38,14 +38,14 @@ export default function MainTabStackNavigator() {
                   marginRight: 15,
                 }}
               >
-                <Icon name="th-large" size={25} color={tintColor} />
+                <Icon name="th-large" size={25} color={textColor} />
               </Pressable>
               <Pressable
                 onPress={() => {
                   navigation.navigate("Setting");
                 }}
               >
-                <Icon name="gear" size={25} color={tintColor} />
+                <Icon name="gear" size={25} color={textColor} />
               </Pressable>
             </View>
           );

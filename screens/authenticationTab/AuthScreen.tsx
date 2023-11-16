@@ -5,9 +5,9 @@ import { RegisterContext } from "../../constants/RegisterContext";
 import { StyleSheet } from "react-native";
 import TextInput2 from "../../components/textInput";
 import { AuthContext } from "../../constants/AuthContext";
-import { useLazyQuery } from "@apollo/client";
+import { DocumentNode, useMutation } from "@apollo/client";
 import Toast from "react-native-root-toast";
-import { VALIDATE_AUTHENTICATION } from "../../graphql/queries/requestAuthentication";
+import { VALIDATE_AUTHENTICATION } from "../../graphql/mutation/requestAuthentication";
 import Button from "../../components/button";
 
 export default function AuthScreen({
@@ -20,7 +20,7 @@ export default function AuthScreen({
     const username = getUsername();
     const email = getEmail();
 
-    const [execute, { called, loading, error, data }] = useLazyQuery(
+    const [execute, { called, loading, error, data }] = useMutation(
         VALIDATE_AUTHENTICATION
     );
 
@@ -136,3 +136,7 @@ const styles = StyleSheet.create({
         color: "#fff",
     },
 });
+function useLazyMutation(VALIDATE_AUTHENTICATION: DocumentNode): [any, { called: any; loading: any; error: any; data: any; }] {
+    throw new Error("Function not implemented.");
+}
+

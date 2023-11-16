@@ -10,7 +10,7 @@ import { ProfileStackScreenList, ProfileStackScreenProps } from "../../types/scr
 const Stack = createNativeStackNavigator<ProfileStackScreenList>();
 
 export default function ProfileTabStackNavigator() {
-  const { backgroundColor, tintColor } = GetColors();
+  const { backgroundColor, textColor } = GetColors();
 
   return (
     <Stack.Navigator
@@ -36,7 +36,7 @@ export default function ProfileTabStackNavigator() {
                 <Icon
                   name="th-large"
                   size={25}
-                  color={tintColor}
+                  color={textColor}
                 />
               </Pressable>
               <Pressable
@@ -44,7 +44,7 @@ export default function ProfileTabStackNavigator() {
                   navigation.navigate("Setting");
                 }}
               >
-                <Icon name="gear" size={25} color={tintColor} />
+                <Icon name="gear" size={25} color={textColor} />
               </Pressable>
             </View>
           );

@@ -6,9 +6,11 @@ import useUserLocalStorage from "../../../hooks/useLocalStorage";
 export default function MainScreen({
     navigation,
 }: ProfileStackScreenProps<"MainScreen">) {
-    const { textColor, backgroundColor, secondaryColor } = GetColors();
+    const { backgroundColor, secondaryColor } = GetColors();
     const { userData } = useUserLocalStorage().user;
     const AVATAR_MAX_SIZE = 70;
+
+    console.log(userData)
 
     return (
         <View
@@ -73,11 +75,11 @@ export default function MainScreen({
                 >
                     <View style={styles.userHeaderInformation}>
                         <Text style={styles.userHeaderInformationTitle}>Friends</Text>
-                        <Text style={{ textAlign: "center" }}>10</Text>
+                        <Text style={{ textAlign: "center" }}>{userData?.friendList?.length || 0}</Text>
                     </View>
                     <View style={styles.userHeaderInformation}>
                         <Text style={styles.userHeaderInformationTitle}>Posts</Text>
-                        <Text style={{ textAlign: "center" }}>0</Text>
+                        <Text style={{ textAlign: "center" }}>{userData?.posts?.length || 0}</Text>
                     </View>
                     <View style={{
                         ...styles.userHeaderInformation,
