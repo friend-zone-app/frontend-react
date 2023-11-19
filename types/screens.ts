@@ -4,6 +4,7 @@ import {
   NavigatorScreenParams,
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Setting, UserPrivacy } from "./user";
 
 declare global {
   namespace ReactNavigation {
@@ -21,7 +22,7 @@ export type RootStackParamList = {
   Setting: undefined;
   NotFound: undefined;
   Authentication: NavigatorScreenParams<AuthStackParamList> | undefined;
-  Splash: undefined
+  Splash: undefined;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -34,6 +35,7 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
 export type RootTabParamList = {
   Main: NavigatorScreenParams<MainStackScreenList> | undefined;
   Profile: NavigatorScreenParams<ProfileStackScreenList> | undefined;
+  CreateEvent: undefined;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> =
@@ -80,9 +82,19 @@ export type ProfileStackScreenProps<Screen extends keyof ProfileStackScreenList>
 export type AuthStackParamList = {
   WelcomeScreen: undefined;
   NameScreen: undefined;
-  EmailScreen: undefined;
-  AuthScreen: undefined;
+  EmailScreen: AuthParams;
+  AuthScreen: AuthParams;
+  SettingScreen: AuthParams;
 };
+
+interface AuthParams {
+  username?: string,
+  email?: string,
+  setting?: {
+    location: UserPrivacy,
+    event: UserPrivacy,
+  },
+}
 
 export type AuthStackScreenProps<Screen extends keyof AuthStackParamList> =
   CompositeScreenProps<

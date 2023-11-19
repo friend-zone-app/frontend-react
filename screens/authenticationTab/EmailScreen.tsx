@@ -13,8 +13,7 @@ export default function EmailScreen({
     route,
     navigation,
 }: AuthStackScreenProps<"EmailScreen">) {
-    const { textColor, secondaryColor, backgroundColor } = GetColors();
-    const { setEmail: setEmailContext } = useContext(RegisterContext);
+    const { textColor, secondaryColor } = GetColors();
     const [email, setEmail] = useState("");
 
     const [requestEmail, { called, loading, error, data }] = useLazyQuery(
@@ -42,8 +41,10 @@ export default function EmailScreen({
             );
             if (!loading && data && called) {
                 Toast.hide(alert);
-                setEmailContext(email);
-                navigation.push("AuthScreen");
+                navigation.push("AuthScreen", {
+                    email,
+                    ...route.params
+                });
             }
         }
     }, [error, loading, data, called, email, navigation]);

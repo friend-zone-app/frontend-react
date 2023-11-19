@@ -23,8 +23,10 @@ export default function MainTabStackNavigator() {
         title: "",
         headerTitle: "",
         headerStyle:{
-          backgroundColor
+          backgroundColor,
+          shadowColor: backgroundColor
         },
+        headerShadowVisible: false,
         headerRight: () => {
           return (
             <View

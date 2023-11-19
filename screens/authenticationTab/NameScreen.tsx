@@ -53,7 +53,9 @@ export default function NameScreen({
             <Button
                 reference={() => {
                     setUsernameContext(username);
-                    navigation.push("EmailScreen");
+                    navigation.push("SettingScreen", {
+                        username
+                    });
                 }}
                 placeholder="Continue"
             />

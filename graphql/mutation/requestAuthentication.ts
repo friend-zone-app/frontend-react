@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const VALIDATE_AUTHENTICATION = gql`
-    mutation validateOtp($code: String!, $email: String!, $username: String!) {
-        validateOtp(code: $code, email: $email, username: $username) {
+    mutation validateOtp($code: String!, $email: String!, $username: String!, $setting: SettingInput!) {
+        validateOtp(code: $code, email: $email, username: $username, setting: $setting) {
             user {
                 username
                 displayName

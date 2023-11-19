@@ -19,8 +19,10 @@ export default function ProfileTabStackNavigator() {
         title: "",
         headerTitle: "",
         headerStyle: {
-          backgroundColor
+          backgroundColor,
+          shadowColor: backgroundColor,
         },
+        headerShadowVisible: false,
         headerRight: () => {
           return (
             <View
