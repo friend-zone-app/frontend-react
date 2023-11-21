@@ -1,19 +1,19 @@
 import { AuthStackScreenProps } from "../../types/screens";
 import { GetColors, Text, View } from "../../components/themed";
 import { useContext, useEffect, useState } from "react";
-import { Button, StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet } from "react-native";
 import TextInput2 from "../../components/textInput";
 import { RegisterContext } from "../../constants/RegisterContext";
 import { useLazyQuery } from "@apollo/client";
 import { REQUEST_AUTHENTICATION } from "../../graphql/queries/requestAuthentication";
 import Toast from "react-native-root-toast";
+import Button from "../../components/button";
 
 export default function EmailScreen({
     route,
     navigation,
 }: AuthStackScreenProps<"EmailScreen">) {
-    const { textColor, secondaryColor, backgroundColor } = GetColors();
-    const { setEmail: setEmailContext } = useContext(RegisterContext);
+    const { textColor, secondaryColor } = GetColors();
     const [email, setEmail] = useState("");
 
     const [requestEmail, { called, loading, error, data }] = useLazyQuery(
@@ -41,8 +41,10 @@ export default function EmailScreen({
             );
             if (!loading && data && called) {
                 Toast.hide(alert);
-                setEmailContext(email);
-                navigation.push("AuthScreen");
+                navigation.push("AuthScreen", {
+                    email,
+                    ...route.params
+                });
             }
         }
     }, [error, loading, data, called, email, navigation]);
@@ -84,26 +86,10 @@ export default function EmailScreen({
                     autoFocus={true}
                 />
             </View>
-            <TouchableOpacity
-                onPress={() => requestEmail({ variables: { email } })}
-                style={{
-                    marginTop: 10,
-                    backgroundColor: textColor,
-                    padding: 5,
-                    paddingHorizontal: 20,
-                    borderRadius: 10,
-                }}
-            >
-                <Text
-                    style={{
-                        fontSize: 20,
-                        color: backgroundColor,
-                        fontWeight: "600",
-                    }}
-                >
-                    Continue
-                </Text>
-            </TouchableOpacity>
+            <Button
+                reference={() => requestEmail({ variables: { email } })}
+                placeholder="Continue"
+            />
         </View>
     );
 }

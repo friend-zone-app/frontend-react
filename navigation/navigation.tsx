@@ -17,15 +17,14 @@ import { User } from "../types/user";
 import {
     createHttpLink,
     useApolloClient,
-    concat,
-    ApolloLink,
-    useQuery,
     useLazyQuery,
+    DocumentNode,
+    useMutation,
 } from "@apollo/client";
 import { GET_SELF } from "../graphql/queries/getUser";
 import Splash from "../components/splash";
 import { setContext } from "@apollo/client/link/context";
-import { REFRESH_TOKEN } from "../graphql/queries/requestAuthentication";
+import { REFRESH_TOKEN } from "../graphql/mutation/requestAuthentication";
 
 export default function Navigation({
     colorScheme,
@@ -67,7 +66,7 @@ function RootNavigator() {
             error: refreshError,
             data: refreshData,
         },
-    ] = useLazyQuery(REFRESH_TOKEN);
+    ] = useMutation(REFRESH_TOKEN);
 
     useEffect(() => {
         const accessToken = tokenStorage.accessToken;
@@ -176,15 +175,6 @@ function RootNavigator() {
                 tokenStorage.setAccessToken(null);
                 tokenStorage.setRefreshToken(null);
             },
-            refreshToken: async (data: any): Promise<boolean> => {
-                return true;
-            },
-            getAccessToken: (): string => {
-                return tokenStorage.accessToken || "";
-            },
-            getRefreshToken: (): string => {
-                return tokenStorage.refreshToken || "";
-            },
         }),
         []
     );
@@ -215,17 +205,6 @@ function RootNavigator() {
                             component={NotFoundScreen}
                             options={{ title: "Oops!" }}
                         />
-                        <Stack.Group
-                            screenOptions={{
-                                presentation: "modal",
-                                headerShown: true,
-                            }}
-                        >
-                            <Stack.Screen
-                                name="Setting"
-                                component={SettingModal}
-                            />
-                        </Stack.Group>
                     </>
                 ) : (
                     <Stack.Screen
@@ -238,3 +217,4 @@ function RootNavigator() {
         </AuthContext.Provider>
     );
 }
+

@@ -3,72 +3,40 @@ import NameScreen from "../../screens/authenticationTab/NameScreen";
 import WelcomeScreen from "../../screens/authenticationTab/WelcomeScreen";
 import EmailScreen from "../../screens/authenticationTab/EmailScreen";
 import { AuthStackParamList } from "../../types/screens";
-import { useMemo, useReducer, useState } from "react";
-import { RegisterContext } from "../../constants/RegisterContext";
 import AuthScreen from "../../screens/authenticationTab/AuthScreen";
+import ConfigurationScreen from "../../screens/authenticationTab/ConfigurationScreen";
+import { GetColors } from "../../components/themed";
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
-
 export default function AuthStackNavigator() {
-    const [state, dispatch] = useReducer(
-        (prevState: any, action: any) => {
-          switch (action.type) {
-            case "SET_USERNAME":
-              return {
-                ...prevState,
-                username: action.username,
-              };
-            case "SET_EMAIL":
-              return {
-                ...prevState,
-                email: action.email,
-              };
-          }
-        },
-        {
-          username: null,
-          email: null
-        }
-      );
-
-    const registerMemo = useMemo(
-        () => ({
-            setUsername: (username: string) => {
-                dispatch({
-                    type: "SET_USERNAME",
-                    username,
-                });
-            },
-            getUsername: (): string => {
-                return state.username;
-            },
-            setEmail: (email: string) => {
-                dispatch({
-                    type: "SET_EMAIL",
-                    email,
-                });
-            },
-            getEmail: (): string => {
-                return state.email
-            }
-        }),
-        [state.username, state.email]
-    );
+    const { backgroundColor } = GetColors();
 
     return (
-        <RegisterContext.Provider value={registerMemo}>
-            <Stack.Navigator
-                initialRouteName="WelcomeScreen"
-                screenOptions={{
-                    headerShown: false,
+        <Stack.Navigator
+            initialRouteName="WelcomeScreen"
+            screenOptions={{
+                headerShown: false,
+                headerStyle: {
+                    backgroundColor,
+                },
+            }}
+        >
+            <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
+            <Stack.Screen name="EmailScreen" component={EmailScreen} />
+            <Stack.Screen name="NameScreen" component={NameScreen} />
+            <Stack.Screen name="AuthScreen" component={AuthScreen} />
+            <Stack.Screen
+                name="ConfigurationScreen"
+                component={ConfigurationScreen}
+                options={{
+                    headerShown: true,
+                    headerRight: () => null,
+                    headerTitle: "",
+                    headerShadowVisible: false,
+                    headerBackVisible: false,
                 }}
-            >
-                <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
-                <Stack.Screen name="EmailScreen" component={EmailScreen} />
-                <Stack.Screen name="NameScreen" component={NameScreen} />
-                <Stack.Screen name="AuthScreen" component={AuthScreen} />
-            </Stack.Navigator>
-        </RegisterContext.Provider>
+            />
+        </Stack.Navigator>
     );
 }

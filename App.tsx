@@ -13,6 +13,7 @@ import {
 } from "@apollo/client";
 import { RootSiblingParent } from "react-native-root-siblings";
 import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
+import useUserLocalStorage from "./hooks/useLocalStorage";
 
 if (process.env.NODE_ENV !== "production") {
     loadDevMessages();
@@ -37,7 +38,7 @@ export default function App() {
     } else {
         return (
             <SafeAreaProvider>
-                <StatusBar style="auto" />
+                <StatusBar style="auto"/>
                 <ApolloProvider client={graphQLClient}>
                     <RootSiblingParent>
                         <Navigation colorScheme={colorScheme} />

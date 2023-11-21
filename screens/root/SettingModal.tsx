@@ -7,12 +7,12 @@ import {
   import { useContext } from "react";
   
   import { Text, View } from "../../components/themed";
-  import { RootStackScreenProps } from "../../types/screens";
+  import { RootTabScreenProps } from "../../types/screens";
   import { AuthContext } from "../../constants/AuthContext";
   
   export default function SettingModal({
     navigation,
-  }: RootStackScreenProps<"Setting">) {
+  }: RootTabScreenProps<"UserSetting">) {
     const { signOut } = useContext(AuthContext);
     return (
       <SafeAreaView style={styles.container}>

@@ -20,7 +20,7 @@ export default function MainScreen({ navigation }: MainStackScreenProps<'MainScr
                         fontWeight: "600",
                     }}
                 >
-                    Welcome to Parties 🎉
+                    Welcome to Friend Zone 🎉
                 </Text>
             </View>
         </View>

@@ -1,4 +1,4 @@
-package com.parties.app;
+package com.friend-zone.app;
 
 import android.app.Application;
 import android.content.res.Configuration;

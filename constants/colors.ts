@@ -5,7 +5,7 @@ const logoBackground = "#eb895f"
 export default {
   light: {
     text: '#000',
-    secondaryColor: "#b3b3b3",
+    secondaryColor: "#4d4d4d",
     background: '#fff',
     tint: tintColorLight,
     tabIconDefault: '#ccc',
@@ -13,7 +13,7 @@ export default {
   },
   dark: {
     text: '#fff',
-    secondaryColor: "#4d4d4d",
+    secondaryColor: "#b3b3b3",
     background: '#000',
     tint: tintColorDark,
     tabIconDefault: '#ccc',

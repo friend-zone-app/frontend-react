@@ -2,37 +2,45 @@ import { useContext, useEffect, useState } from "react";
 import { GetColors, Text, View } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
 import { RegisterContext } from "../../constants/RegisterContext";
-import { Button, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import TextInput2 from "../../components/textInput";
 import { AuthContext } from "../../constants/AuthContext";
-import { useLazyQuery } from "@apollo/client";
+import { DocumentNode, useMutation } from "@apollo/client";
 import Toast from "react-native-root-toast";
-import { VALIDATE_AUTHENTICATION } from "../../graphql/queries/requestAuthentication";
+import { VALIDATE_AUTHENTICATION } from "../../graphql/mutation/requestAuthentication";
+import Button from "../../components/button";
 
 export default function AuthScreen({
-    navigation,
+    navigation, route
 }: AuthStackScreenProps<"AuthScreen">) {
     const { textColor, secondaryColor } = GetColors();
     const [authCode, setAuthCode] = useState("");
     const { signUp } = useContext(AuthContext);
-    const { getUsername, getEmail } = useContext(RegisterContext);
-    const username = getUsername();
-    const email = getEmail();
+    const { getUsername, getEmail, getSetting } = useContext(RegisterContext);
+    const username = route.params.username;
+    const email = route.params.email;
+    const setting = route.params.setting ? route.params.setting : {
+        location: "FRIENDS",
+        event: "FRIENDS"
+    };
 
-    const [execute, { called, loading, error, data }] = useLazyQuery(
+    const [execute, { called, loading, error, data }] = useMutation(
         VALIDATE_AUTHENTICATION
     );
 
     useEffect(() => {
         if (error && called) {
+            console.log(error.message, error.extraInfo, error.clientErrors);
             const queryError = error?.graphQLErrors[0];
-            Toast.show(
-                queryError.message ||
-                    "Failed to authenticate OTP code, please try again later!",
-                {
-                    duration: Toast.durations.LONG,
-                }
-            );
+            if (queryError) {
+                Toast.show(
+                    queryError.message ||
+                        "Failed to authenticate OTP code, please try again later!",
+                    {
+                        duration: Toast.durations.LONG,
+                    }
+                );
+            }
         }
 
         if (!loading && data && called) {
@@ -98,16 +106,25 @@ export default function AuthScreen({
                 />
             </View>
             <Button
-                title="Continue"
-                onPress={() => {
+                reference={() => {
                     execute({
                         variables: {
                             username,
                             email,
                             code: authCode,
+                            setting: {
+                                privacy: {
+                                    shareLocation: setting.location,
+                                    reactionOnPost: "FRIENDS",
+                                    joinPost: setting.event,
+                                    friendRequest: "EVERYONE",
+                                },
+                                colorMode: "LIGHT",
+                            },
                         },
                     });
                 }}
+                placeholder="Continue"
             />
         </View>
     );

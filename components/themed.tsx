@@ -6,8 +6,10 @@ import useColorScheme from '../hooks/useColorScheme';
 export function useThemeColor(
     props: { light?: string; dark?: string },
     colorName: keyof typeof colors.light & keyof typeof colors.dark,
+    invert?: boolean
 ) {
-  const theme = useColorScheme();
+  let theme = useColorScheme();
+  if(invert) theme = theme == "light" ? "dark" : "light"
   const colorFromProps = props[theme];
 
   if (colorFromProps) {
@@ -47,13 +49,22 @@ export function SafeAreaView(props: SafeAreaViewProps) {
     return <SafeAreaView style={[{ backgroundColor }, style]} {...otherProps} />;
 }
 
-export function GetColors() {
-    const textColor = useThemeColor({ }, 'text');
-    const backgroundColor = useThemeColor({}, 'background');
-    const secondaryColor = useThemeColor({}, 'secondaryColor');
+interface GetColorsProps { 
+  textColorInvert?: boolean;
+  backgroundcolorInvert?: boolean;
+  secondaryColorInvert?: boolean;
+  tintColorInvert?: boolean;
+}
+
+export function GetColors(props?: GetColorsProps) {
+    const textColor = useThemeColor({ }, 'text', props?.textColorInvert);
+    const backgroundColor = useThemeColor({}, 'background', props?.backgroundcolorInvert);
+    const secondaryColor = useThemeColor({}, 'secondaryColor', props?.secondaryColorInvert);
+    const tintColor = useThemeColor({}, "tint", props?.tintColorInvert);
     return {
         textColor,
         backgroundColor,
-        secondaryColor
+        secondaryColor,
+        tintColor
     }
 }
