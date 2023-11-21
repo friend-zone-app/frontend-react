@@ -26,24 +26,10 @@ export default function ProfileTabStackNavigator() {
         headerRight: () => {
           return (
             <View
-              style={{
-                flexDirection: "row",
-              }}
             >
               <Pressable
-                style={{
-                  marginRight: 15,
-                }}
-              >
-                <Icon
-                  name="th-large"
-                  size={25}
-                  color={textColor}
-                />
-              </Pressable>
-              <Pressable
                 onPress={() => {
-                  navigation.navigate("Setting");
+                  navigation.navigate("UserSetting");
                 }}
               >
                 <Icon name="gear" size={25} color={textColor} />
@@ -60,7 +46,7 @@ export default function ProfileTabStackNavigator() {
                   fontWeight: "600",
                 }}
               >
-                Parties
+                Friend Zone
               </Text>
             </View>
           );

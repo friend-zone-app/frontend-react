@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "Parties",
-    "slug": "parties",
+    "name": "Friend Zone",
+    "slug": "friend-zone",
+    "scheme": "com.friend-zone.app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,11 +20,11 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.parties.app"
+      "bundleIdentifier": "com.friend-zone.app"
     },
     "android": {
       "userInterfaceStyle": "automatic",
-      "package": "com.parties.app"
+      "package": "com.friend-zone.app"
     },
     "extra": {
       "eas": {
@@ -45,6 +46,10 @@
           "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location.",
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
+      ],
+      [
+        "./plugins/withAndroidQuries.ts",
+        {}
       ]
     ]
   }

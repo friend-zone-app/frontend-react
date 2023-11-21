@@ -7,54 +7,71 @@ import MainTabStackNavigator from "./MainStack";
 import ProfileTabStackNavigator from "./ProfileStack";
 import { GetColors } from "../../components/themed";
 import CreateEvent from "../../screens/bottomTab/CreateEvent";
+import SettingModal from "../../screens/root/SettingModal";
 
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 export default function BottomTabNavigator() {
-  const { backgroundColor, tintColor, textColor, secondaryColor } = GetColors();
+    const { backgroundColor, tintColor, textColor, secondaryColor } =
+        GetColors();
 
-  return (
-    <BottomTab.Navigator
-      initialRouteName="Main"
-      screenOptions={{
-        tabBarActiveTintColor: textColor,
-        tabBarInactiveTintColor: secondaryColor,
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor,
-          borderColor: backgroundColor,
-          shadowColor: backgroundColor,
-        },
-        tabBarShowLabel: false
-      }}
-    >
-      <BottomTab.Screen
-        name="Main"
-        component={MainTabStackNavigator}
-        options={({ navigation }: RootTabScreenProps<"Main">) => ({
-          tabBarIcon: ({ color }) => <Icon name="home" size={30} color={color}/>,
-        })}
-      />
-      <BottomTab.Screen
-        name="CreateEvent"
-        component={CreateEvent}
-        options={({navigation}: RootTabScreenProps<"CreateEvent">) => ({
-          headerShown: true,
-          headerTitle: "",
-          headerShadowVisible: false,
-          headerStyle:{
-            backgroundColor,
-          },
-          tabBarIcon: ({color}) => <Icon name="plus-circle" size={30} color={color} />
-        })}
-      />
-      <BottomTab.Screen
-        name="Profile"
-        component={ProfileTabStackNavigator}
-        options={({ navigation }: RootTabScreenProps<"Profile">) => ({
-          tabBarIcon: ({ color }) => <Icon name="user" size={30} color={color}/>
-        })}
-      />
-    </BottomTab.Navigator>
-  );
+    return (
+        <BottomTab.Navigator
+            initialRouteName="Main"
+            screenOptions={{
+                tabBarActiveTintColor: textColor,
+                tabBarInactiveTintColor: secondaryColor,
+                headerShown: false,
+                tabBarStyle: {
+                    backgroundColor,
+                    borderColor: backgroundColor,
+                    shadowColor: backgroundColor,
+                },
+                tabBarShowLabel: false,
+            }}
+        >
+            <BottomTab.Screen options={{
+                tabBarButton: () => null,
+                headerShown: true,
+                headerStyle: {
+                backgroundColor
+                }
+            }}  name="UserSetting" component={SettingModal} />
+            <BottomTab.Screen
+                name="Main"
+                component={MainTabStackNavigator}
+                options={({ navigation }: RootTabScreenProps<"Main">) => ({
+                    tabBarIcon: ({ color }) => (
+                        <Icon name="home" size={30} color={color} />
+                    ),
+                })}
+            />
+            <BottomTab.Screen
+                name="CreateEvent"
+                component={CreateEvent}
+                options={({
+                    navigation,
+                }: RootTabScreenProps<"CreateEvent">) => ({
+                    headerShown: true,
+                    headerTitle: "",
+                    headerShadowVisible: false,
+                    headerStyle: {
+                        backgroundColor,
+                    },
+                    tabBarIcon: ({ color }) => (
+                        <Icon name="plus-circle" size={30} color={color} />
+                    ),
+                })}
+            />
+            <BottomTab.Screen
+                name="Profile"
+                component={ProfileTabStackNavigator}
+                options={({ navigation }: RootTabScreenProps<"Profile">) => ({
+                    tabBarIcon: ({ color }) => (
+                        <Icon name="user" size={30} color={color} />
+                    ),
+                })}
+            />
+        </BottomTab.Navigator>
+    );
 }

@@ -15,10 +15,10 @@ import useUserLocalStorage from "../../hooks/useLocalStorage";
 import * as Location from "expo-location";
 import Toast from "react-native-root-toast";
 
-export default function SettingScreen({
+export default function ConfigurationScreen({
     navigation,
     route
-}: AuthStackScreenProps<"SettingScreen">) {
+}: AuthStackScreenProps<"ConfigurationScreen">) {
     const { backgroundColor } =
         GetColors();
     const username = route.params.username;
@@ -191,7 +191,7 @@ export default function SettingScreen({
                             }}
                         >
                             You can choose who invites you to events: just
-                            friends or everyone nearby (parties/festivals).
+                            friends or everyone nearby (friend-zone/festivals).
                         </Text>
                     </View>
                     <View

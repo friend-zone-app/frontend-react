@@ -15,18 +15,6 @@ export interface AddBadgeInput {
     enabled: boolean;
 }
 
-export interface Address {
-    addressLine: string;
-    adminDistrict: string;
-    adminDistrict2: string;
-    countryRegion: string;
-    formattedAddress: string;
-    intersection?: Interception | null;
-    locality: string;
-    postalCode: string;
-    countryRegionIso2: string;
-}
-
 export interface Badge {
     _id: string;
     type: BadgeType;
@@ -83,20 +71,6 @@ export interface FriendReq {
     user: string;
 }
 
-export interface GeocodePoint {
-    type: string;
-    coordinates: number[];
-    calculationMethod: string;
-    usageTypes: string[];
-}
-
-export interface Interception {
-    baseStreet: string;
-    secondaryStreet1: string;
-    intersectionType: string;
-    displayName: string;
-}
-
 export interface Invite {
     status: boolean;
     inviteTo: string;
@@ -105,11 +79,6 @@ export interface Invite {
 
 export interface InviteInput {
     inviteTo: string;
-}
-
-export interface Point {
-    type: string;
-    coordinates: number[];
 }
 
 export interface Post {
@@ -173,6 +142,67 @@ export interface Tokens {
     accessToken: string;
     refreshToken: string;
 }
+
+export type Scalars = {
+    ID: string
+    String: string
+    Boolean: boolean
+    Int: number
+    Float: number
+  }
+  
+  /** Interception */
+  export type Interception = {
+    __typename?: "Interception"
+    baseStreet: Scalars["String"]
+    secondaryStreet1: Scalars["String"]
+    intersectionType: Scalars["String"]
+    displayName: Scalars["String"]
+  }
+  
+  /** Address */
+  export type Address = {
+    __typename?: "Address"
+    addressLine: Scalars["String"]
+    adminDistrict: Scalars["String"]
+    adminDistrict2: Scalars["String"]
+    countryRegion: Scalars["String"]
+    formattedAddress: Scalars["String"]
+    intersection: Interception
+    locality: Scalars["String"]
+    postalCode: Scalars["String"]
+    countryRegionIso2: Scalars["String"]
+  }
+  
+  /** Geocodepoint */
+  export type GeocodePoint = {
+    __typename?: "GeocodePoint"
+    type: Scalars["String"]
+    coordinates: Array<Scalars["Float"]>
+    calculationMethod: Scalars["String"]
+    usageTypes: Array<Scalars["String"]>
+  }
+  
+  /** Point */
+  export type Point = {
+    __typename?: "Point"
+    type: Scalars["String"]
+    coordinates: Array<Scalars["Float"]>
+  }
+  
+  /** Location */
+  export type Location = {
+    __typename?: "Location"
+    bbox: Array<Scalars["Float"]>
+    name: Scalars["String"]
+    point: Point
+    address: Address
+    confidence: Scalars["String"]
+    entityType: Scalars["String"]
+    geocodePoint: GeocodePoint
+    matchCodes: Array<Scalars["String"]>
+  }
+  
 
 export enum BadgeType {
     SPECIAL = "SPECIAL",

@@ -30,10 +30,6 @@ export default function MainTabStackNavigator() {
         headerRight: () => {
           return (
             <View
-              style={{
-                flexDirection: "row",
-                backgroundColor: "none"
-              }}
             >
               <Pressable
                 style={{
@@ -41,13 +37,6 @@ export default function MainTabStackNavigator() {
                 }}
               >
                 <Icon name="th-large" size={25} color={textColor} />
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  navigation.navigate("Setting");
-                }}
-              >
-                <Icon name="gear" size={25} color={textColor} />
               </Pressable>
             </View>
           );
@@ -66,7 +55,7 @@ export default function MainTabStackNavigator() {
                   backgroundColor: "transparent"
                 }}
               >
-                Parties
+                Friend Zone
               </Text>
             </View>
           );

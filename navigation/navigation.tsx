@@ -175,15 +175,6 @@ function RootNavigator() {
                 tokenStorage.setAccessToken(null);
                 tokenStorage.setRefreshToken(null);
             },
-            refreshToken: async (data: any): Promise<boolean> => {
-                return true;
-            },
-            getAccessToken: (): string => {
-                return tokenStorage.accessToken || "";
-            },
-            getRefreshToken: (): string => {
-                return tokenStorage.refreshToken || "";
-            },
         }),
         []
     );
@@ -214,17 +205,6 @@ function RootNavigator() {
                             component={NotFoundScreen}
                             options={{ title: "Oops!" }}
                         />
-                        <Stack.Group
-                            screenOptions={{
-                                presentation: "modal",
-                                headerShown: true,
-                            }}
-                        >
-                            <Stack.Screen
-                                name="Setting"
-                                component={SettingModal}
-                            />
-                        </Stack.Group>
                     </>
                 ) : (
                     <Stack.Screen

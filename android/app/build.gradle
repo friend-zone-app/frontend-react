@@ -81,9 +81,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace 'com.parties.app'
+    namespace 'com.friend-zone.app'
     defaultConfig {
-        applicationId 'com.parties.app'
+        applicationId 'com.friend-zone.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

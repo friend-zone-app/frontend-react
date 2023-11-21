@@ -26,7 +26,7 @@ export default function WelcomeScreen({
                         fontWeight: "600",
                     }}
                 >
-                    Welcome to Parties 🎉
+                    Welcome to Friend Zone 🎉
                 </Text>
                 <Button reference={() => navigation.push("NameScreen")} placeholder="Continue"/>
             </View>
