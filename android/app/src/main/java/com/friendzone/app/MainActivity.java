@@ -1,4 +1,4 @@
-package com.friend-zone.app;
+package com.friendzone.app;
 
 import android.os.Build;
 import android.os.Bundle;

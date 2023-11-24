@@ -11,6 +11,11 @@ import useUserLocalStorage from "../../hooks/useLocalStorage";
 import { Location } from "../../types/user";
 import * as Linking from "expo-linking";
 import Button from "../../components/button";
+import {
+    DateTimePickerAndroid,
+    DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import Toast from "react-native-root-toast";
 
 export default function CreateEvent({
     navigation,
@@ -34,16 +39,14 @@ export default function CreateEvent({
     ]);
     const { accessToken } = useUserLocalStorage().token;
     const [addressExist, setAddressExist] = useState(false);
-    const [findAddress, { loading, error, data, called, refetch }] = useLazyQuery(
-        GET_LOCATION_BY_ADDRESS,
-        {
+    const [findAddress, { loading, error, data, called, refetch }] =
+        useLazyQuery(GET_LOCATION_BY_ADDRESS, {
             context: {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },
             },
-        }
-    );
+        });
     const [locationData, setLocationData] = useState<Location>();
 
     useEffect(() => {
@@ -51,15 +54,73 @@ export default function CreateEvent({
         if (loading) return;
         if (error) {
             console.error(error);
+            Toast.show("Failed to get location, restart the app!", {
+                duration: Toast.durations.LONG
+            })
             return;
         }
 
         if (data.getLocationDataByAddress.name.length > 2) {
             setAddressExist(true);
             setLocationData(data.getLocationDataByAddress);
-            setAddress(locationData?.name || address)
+            setAddress(locationData?.name || address);
         }
     }, [called, loading, error, data, locationData, addressExist]);
+
+    const [date, setDate] = useState<number>(0);
+    const [endDate, setEndDate] = useState<number>(0);
+    const [startDate, setStartDate] = useState<Date>(new Date());
+    const [startDate2, setStartDate2] = useState<Date>(new Date());
+
+    const onChange = (
+        event: DateTimePickerEvent,
+        dateState: number,
+        setDateState: React.Dispatch<React.SetStateAction<number>>,
+        selectedDate?: Date
+    ) => {
+        if (!selectedDate || event.type != "set") {
+            setDateState(0);
+            setStartDate(new Date());
+            setStartDate2(new Date());
+            return;
+        }
+        const currentDate = selectedDate.valueOf();
+        if (dateState == 0) {
+            setDateState(currentDate);
+        } else {
+            const now = startDate.valueOf();
+            const targetDate = currentDate - now + dateState;
+            setDateState(targetDate);
+        }
+    };
+
+    useEffect(() => {
+        if (startDate.valueOf() == 0 || date == 0) return;
+        showMode("time", date, setDate, startDate);
+        setStartDate(new Date(0));
+    }, [date, startDate]);
+
+    useEffect(() => {
+        if (startDate2.valueOf() == 0 || endDate == 0) return;
+        showMode("time", endDate, setEndDate, date ? new Date(date) : new Date());
+        setStartDate2(new Date(0));
+    }, [endDate, startDate2]);
+
+    const showMode = (
+        currentMode: "date" | "time",
+        targetDate: number,
+        setTargetDate: React.Dispatch<React.SetStateAction<number>>,
+        startDate: Date,
+    ) => {
+        DateTimePickerAndroid.open({
+            value: startDate,
+            onChange: (event: DateTimePickerEvent, selectedDate?: Date) => {
+                onChange(event, targetDate, setTargetDate, selectedDate);
+            },
+            mode: currentMode,
+            is24Hour: true,
+        });
+    };
 
     return (
         <View
@@ -76,7 +137,6 @@ export default function CreateEvent({
             >
                 Add new event 📌
             </Text>
-
             <View
                 style={{
                     margin: 10,
@@ -117,6 +177,7 @@ export default function CreateEvent({
                         borderLeftWidth: 0,
                         borderRightWidth: 0,
                         borderBottomWidth: 0,
+                        marginBottom: 14,
                     }}
                     placeholder="Notes"
                     placeholderTextColor={textColor}
@@ -130,7 +191,6 @@ export default function CreateEvent({
                     onChangeText={setDescription}
                 />
             </View>
-
             <View
                 style={{
                     maxWidth: "90%",
@@ -161,19 +221,24 @@ export default function CreateEvent({
                     setOpen={setTypeOpen}
                     setValue={setTypeValue}
                     setItems={setTypeItems}
+                    listMode="SCROLLVIEW"
+                    dropDownContainerStyle={{
+                        maxHeight: "400%",
+                    }}
                 />
             </View>
             <View
                 style={{
                     width: "90%",
                     marginTop: 20,
-                    zIndex: -1
+                    zIndex: -1,
                 }}
             >
                 <Text
                     style={{
                         fontSize: 20,
                         fontWeight: "600",
+                        margin: 10,
                     }}
                 >
                     Find your event's location
@@ -200,9 +265,7 @@ export default function CreateEvent({
                         placeholder="Address"
                         placeholderTextColor={textColor}
                         autoCapitalize="sentences"
-                        value={
-                            address
-                        }
+                        value={address}
                         placeholderStyle={{
                             fontSize: 16,
                             color: secondaryColor,
@@ -210,6 +273,7 @@ export default function CreateEvent({
                         }}
                         onChangeText={setAddress}
                         onSubmitEditing={() => {
+                            if (!address) return;
                             if (!called && address.length > 4)
                                 findAddress({
                                     variables: {
@@ -218,37 +282,120 @@ export default function CreateEvent({
                                 });
                             else {
                                 refetch({
-                                        address,
-                                    },
-                                )
+                                    address,
+                                });
                             }
                         }}
                     />
-                    <Button placeholder="Map" reference={() => {
-                        if(!locationData) return;
-                        const coors = locationData.point.coordinates;
-                        console.log(coors);
-                        const scheme = Platform.select({
-                            ios: "maps://0,0?q=",
-                            android: "geo:0,0?q=",
-                        });
-                        const latLng = `${coors[0]},${coors[1]}`;
-                        const label = title || "Your FriendZone event!";
-                        const url = Platform.select({
-                            ios: `${scheme}${label}@${latLng}`,
-                            android: `${scheme}${latLng}(${label})`,
-                        });
+                    <Button
+                        placeholder="Map"
+                        reference={() => {
+                            if (!locationData) return;
+                            const coors = locationData.point.coordinates;
+                            console.log(coors);
+                            const scheme = Platform.select({
+                                ios: "maps://0,0?q=",
+                                android: "geo:0,0?q=",
+                            });
+                            const latLng = `${coors[0]},${coors[1]}`;
+                            const label = title || "Your FriendZone event!";
+                            const url = Platform.select({
+                                ios: `${scheme}${label}@${latLng}`,
+                                android: `${scheme}${latLng}(${label})`,
+                            });
 
-                        console.log(url);
+                            console.log(url);
 
-                        url ? Linking.openURL(url) : null;
-                    }} style={{
-                        minWidth: 10,
-                        width: "auto",
+                            url ? Linking.openURL(url) : null;
+                        }}
+                        style={{
+                            minWidth: 10,
+                            width: "auto",
+                            justifyContent: "center",
+                            marginLeft: 5,
+                            display: addressExist ? "flex" : "none",
+                        }}
+                    />
+                </View>
+                <Text
+                    style={{
+                        fontSize: 20,
+                        fontWeight: "600",
+                        margin: 10,
+                        marginTop: 30,
+                    }}
+                >
+                    Your event time/date
+                </Text>
+                <View
+                    style={{
+                        marginTop: 20,
+                        borderWidth: 0.7,
+                        borderColor: textColor,
+                        padding: 8,
+                        paddingTop: 0,
+                        borderRadius: 10,
                         justifyContent: "center",
-                        marginLeft: 5,
-                        display: addressExist ? "flex" : "none"
-                    }} />
+                    }}
+                >
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontSize: 20,
+                                fontWeight: "600",
+                            }}
+                        >
+                            {startDate.valueOf()
+                                ? "Event date's start"
+                                : new Date(date).toLocaleString()}
+                        </Text>
+                        <Button
+                            placeholder="Start"
+                            reference={() => {
+                                showMode("date", date, setDate, startDate);
+                            }}
+                            style={{
+                                minWidth: 90,
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        />
+                    </View>
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontSize: 20,
+                                fontWeight: "600",
+                            }}
+                        >
+                            {startDate2.valueOf()
+                                ? "Event date's end"
+                                : new Date(endDate).toLocaleString()}
+                        </Text>
+                        <Button
+                            placeholder="End"
+                            reference={() => {
+                                showMode("date", endDate, setEndDate, date ? new Date(date) : startDate2);
+                            }}
+                            style={{
+                                minWidth: 90,
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        />
+                    </View>
                 </View>
             </View>
         </View>

@@ -1,11 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { GetColors, Text, View } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
-import { RegisterContext } from "../../constants/RegisterContext";
 import { StyleSheet } from "react-native";
 import TextInput2 from "../../components/textInput";
 import { AuthContext } from "../../constants/AuthContext";
-import { DocumentNode, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import Toast from "react-native-root-toast";
 import { VALIDATE_AUTHENTICATION } from "../../graphql/mutation/requestAuthentication";
 import Button from "../../components/button";
@@ -16,7 +15,6 @@ export default function AuthScreen({
     const { textColor, secondaryColor } = GetColors();
     const [authCode, setAuthCode] = useState("");
     const { signUp } = useContext(AuthContext);
-    const { getUsername, getEmail, getSetting } = useContext(RegisterContext);
     const username = route.params.username;
     const email = route.params.email;
     const setting = route.params.setting ? route.params.setting : {

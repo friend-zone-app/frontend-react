@@ -159,7 +159,6 @@ export default function ConfigurationScreen({
                             setValue={setlocPermValue}
                             setItems={setlocPermItems}
                             onPress={() => setTriggerLoc(true)}
-                            disabled={!userSetting.location && triggerLocationReq ? true : false}
                         />
                     </View>
                 </View>
@@ -191,7 +190,7 @@ export default function ConfigurationScreen({
                             }}
                         >
                             You can choose who invites you to events: just
-                            friends or everyone nearby (friend-zone/festivals).
+                            friends or everyone nearby (friendzone/festivals).
                         </Text>
                     </View>
                     <View
