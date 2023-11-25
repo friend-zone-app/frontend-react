@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import TextInput2 from "../../components/textInput";
 import { View, Text, GetColors } from "../../components/themed";
 import { RootTabScreenProps } from "../../types/screens";
-import { Platform, StyleSheet } from "react-native";
+import { Image, Platform, ScrollView, StyleSheet } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { EventType } from "../../types/user";
 import { useLazyQuery } from "@apollo/client";
@@ -11,11 +11,8 @@ import useUserLocalStorage from "../../hooks/useLocalStorage";
 import { Location } from "../../types/user";
 import * as Linking from "expo-linking";
 import Button from "../../components/button";
-import {
-    DateTimePickerAndroid,
-    DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
 import Toast from "react-native-root-toast";
+import selfieUrl, { generateSelfieSequence } from "../../constants/selfieUrl";
 
 export default function CreateEvent({
     navigation,
@@ -48,6 +45,7 @@ export default function CreateEvent({
             },
         });
     const [locationData, setLocationData] = useState<Location>();
+    const [selfieSequence] = useState(generateSelfieSequence())
 
     useEffect(() => {
         if (!called) return;
@@ -55,8 +53,8 @@ export default function CreateEvent({
         if (error) {
             console.error(error);
             Toast.show("Failed to get location, restart the app!", {
-                duration: Toast.durations.LONG
-            })
+                duration: Toast.durations.LONG,
+            });
             return;
         }
 
@@ -65,87 +63,89 @@ export default function CreateEvent({
             setLocationData(data.getLocationDataByAddress);
             setAddress(locationData?.name || address);
         }
-    }, [called, loading, error, data, locationData, addressExist]);
-
-    const [date, setDate] = useState<number>(0);
-    const [endDate, setEndDate] = useState<number>(0);
-    const [startDate, setStartDate] = useState<Date>(new Date());
-    const [startDate2, setStartDate2] = useState<Date>(new Date());
-
-    const onChange = (
-        event: DateTimePickerEvent,
-        dateState: number,
-        setDateState: React.Dispatch<React.SetStateAction<number>>,
-        selectedDate?: Date
-    ) => {
-        if (!selectedDate || event.type != "set") {
-            setDateState(0);
-            setStartDate(new Date());
-            setStartDate2(new Date());
-            return;
-        }
-        const currentDate = selectedDate.valueOf();
-        if (dateState == 0) {
-            setDateState(currentDate);
-        } else {
-            const now = startDate.valueOf();
-            const targetDate = currentDate - now + dateState;
-            setDateState(targetDate);
-        }
-    };
-
-    useEffect(() => {
-        if (startDate.valueOf() == 0 || date == 0) return;
-        showMode("time", date, setDate, startDate);
-        setStartDate(new Date(0));
-    }, [date, startDate]);
-
-    useEffect(() => {
-        if (startDate2.valueOf() == 0 || endDate == 0) return;
-        showMode("time", endDate, setEndDate, date ? new Date(date) : new Date());
-        setStartDate2(new Date(0));
-    }, [endDate, startDate2]);
-
-    const showMode = (
-        currentMode: "date" | "time",
-        targetDate: number,
-        setTargetDate: React.Dispatch<React.SetStateAction<number>>,
-        startDate: Date,
-    ) => {
-        DateTimePickerAndroid.open({
-            value: startDate,
-            onChange: (event: DateTimePickerEvent, selectedDate?: Date) => {
-                onChange(event, targetDate, setTargetDate, selectedDate);
-            },
-            mode: currentMode,
-            is24Hour: true,
-        });
-    };
+    }, [called, loading, error, data]);
 
     return (
-        <View
+        <ScrollView
+            contentContainerStyle={{
+                alignItems: "center",
+                height: "150%",
+            }}
             style={{
                 ...styles.container,
-                backgroundColor: backgroundColor,
+                backgroundColor,
             }}
         >
-            <Text
+            <View
                 style={{
-                    fontSize: 30,
-                    fontWeight: "600",
+                    minHeight: "60%",
+                    justifyContent: "center",
+                    alignItems: "center",
                 }}
             >
-                Add new event 📌
-            </Text>
+                <View
+                    style={{
+                        maxWidth: "90%",
+                        maxHeight: 332,
+                        flex: 1,
+                        aspectRatio: 1 / 1,
+                        borderWidth: 3,
+                        borderColor: textColor,
+                        borderRadius: 18,
+                        marginTop: 30,
+                        backgroundColor: textColor,
+                    }}
+                >
+                    <Image
+                        source={selfieUrl[selfieSequence]}
+                        style={{
+                            maxWidth: "100%",
+                            maxHeight: "100%",
+                            borderRadius: 18,
+                            objectFit: "contain",
+                            backgroundColor: "#000",
+                        }}
+                    />
+                </View>
+                <Text
+                    style={{
+                        textAlign: "center",
+                        color: secondaryColor,
+                        fontWeight: "500",
+                        fontSize: 18,
+                        marginTop: 6,
+                    }}
+                >
+                    This is a pose suggestion for today.
+                </Text>
+                <View
+                    style={{
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <Button
+                        placeholder={""}
+                        reference={() => {
+                            console.log("call camera");
+                        }}
+                        style={{
+                            backgroundColor,
+                            borderWidth: 4,
+                            aspectRatio: 1 / 1,
+                            borderRadius: 100,
+                        }}
+                    />
+                </View>
+            </View>
             <View
                 style={{
                     margin: 10,
                     width: "90%",
-                    borderWidth: 1,
+                    borderWidth: 2,
                     borderColor: secondaryColor,
                     borderRadius: 10,
                     justifyContent: "center",
-                    marginTop: 32,
                 }}
             >
                 <TextInput2
@@ -160,7 +160,10 @@ export default function CreateEvent({
                     placeholderTextColor={textColor}
                     autoCapitalize="sentences"
                     value={title}
-                    placeholderStyle={{ fontSize: 20, color: secondaryColor }}
+                    placeholderStyle={{
+                        fontSize: 20,
+                        color: secondaryColor,
+                    }}
                     onChangeText={setTitle}
                 />
                 <TextInput2
@@ -169,7 +172,7 @@ export default function CreateEvent({
                         color: textColor,
                         fontWeight: "500",
                         borderTopColor: secondaryColor,
-                        borderWidth: 1,
+                        borderWidth: 2,
                         padding: 5,
                         paddingLeft: 10,
                         borderBottomLeftRadius: 10,
@@ -197,15 +200,6 @@ export default function CreateEvent({
                     marginTop: 20,
                 }}
             >
-                <Text
-                    style={{
-                        fontSize: 20,
-                        fontWeight: "600",
-                        margin: 10,
-                    }}
-                >
-                    Event type
-                </Text>
                 <DropDownPicker
                     style={{
                         zIndex: 1,
@@ -234,15 +228,6 @@ export default function CreateEvent({
                     zIndex: -1,
                 }}
             >
-                <Text
-                    style={{
-                        fontSize: 20,
-                        fontWeight: "600",
-                        margin: 10,
-                    }}
-                >
-                    Find your event's location
-                </Text>
                 <View
                     style={{
                         flexDirection: "row",
@@ -255,25 +240,28 @@ export default function CreateEvent({
                             fontWeight: "500",
                             borderColor: secondaryColor,
                             borderRadius: 10,
-                            borderWidth: 1,
+                            borderWidth: 2,
                             padding: 5,
                             paddingLeft: 10,
                             paddingVertical: 10,
                             marginTop: 10,
                             flex: 1,
                         }}
-                        placeholder="Address"
+                        placeholder="Your events address"
                         placeholderTextColor={textColor}
                         autoCapitalize="sentences"
                         value={address}
                         placeholderStyle={{
                             fontSize: 16,
                             color: secondaryColor,
-                            fontWeight: "400",
+                            fontWeight: "500",
                         }}
                         onChangeText={setAddress}
                         onSubmitEditing={() => {
                             if (!address) return;
+                            if(address === "/here") {
+                                setAddressExist(true);
+                            }
                             if (!called && address.length > 4)
                                 findAddress({
                                     variables: {
@@ -285,6 +273,11 @@ export default function CreateEvent({
                                     address,
                                 });
                             }
+                        }}
+                        onPressIn={() => {
+                            Toast.show("Type /here for current location :)", {
+                                duration: Toast.durations.SHORT
+                            })
                         }}
                     />
                     <Button
@@ -303,9 +296,6 @@ export default function CreateEvent({
                                 ios: `${scheme}${label}@${latLng}`,
                                 android: `${scheme}${latLng}(${label})`,
                             });
-
-                            console.log(url);
-
                             url ? Linking.openURL(url) : null;
                         }}
                         style={{
@@ -317,88 +307,61 @@ export default function CreateEvent({
                         }}
                     />
                 </View>
+            </View>
+            <View
+                style={{
+                    maxWidth: "90%",
+                    marginTop: 24,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                }}
+            >
                 <Text
                     style={{
-                        fontSize: 20,
-                        fontWeight: "600",
-                        margin: 10,
-                        marginTop: 30,
-                    }}
-                >
-                    Your event time/date
-                </Text>
-                <View
-                    style={{
-                        marginTop: 20,
-                        borderWidth: 0.7,
-                        borderColor: textColor,
-                        padding: 8,
-                        paddingTop: 0,
+                        fontSize: 16,
+                        fontWeight: "500",
+                        width: "78%",
+                        borderWidth: 2,
                         borderRadius: 10,
-                        justifyContent: "center",
+                        padding: 10,
+                        marginRight: "2%",
                     }}
                 >
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontSize: 20,
-                                fontWeight: "600",
-                            }}
-                        >
-                            {startDate.valueOf()
-                                ? "Event date's start"
-                                : new Date(date).toLocaleString()}
-                        </Text>
-                        <Button
-                            placeholder="Start"
-                            reference={() => {
-                                showMode("date", date, setDate, startDate);
-                            }}
-                            style={{
-                                minWidth: 90,
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                        />
-                    </View>
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontSize: 20,
-                                fontWeight: "600",
-                            }}
-                        >
-                            {startDate2.valueOf()
-                                ? "Event date's end"
-                                : new Date(endDate).toLocaleString()}
-                        </Text>
-                        <Button
-                            placeholder="End"
-                            reference={() => {
-                                showMode("date", endDate, setEndDate, date ? new Date(date) : startDate2);
-                            }}
-                            style={{
-                                minWidth: 90,
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                        />
-                    </View>
-                </View>
+                    Add your friends
+                </Text>
+                <Button
+                    placeholder={"find"}
+                    reference={() => {}}
+                    style={{
+                        margin: 0,
+                        marginTop: 0,
+                        padding: 10,
+                    }}
+                    textStyle={{
+                        fontSize: 16,
+                        margin: 0,
+                    }}
+                />
             </View>
-        </View>
+            <Button
+                placeholder={"Straight to the internet!"}
+                reference={() => {}}
+                style={{
+                    marginTop: 32,
+                    width: "90%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: 10,
+                }}
+
+                textStyle={{
+                    width: "100%",
+                    textAlign: "center",
+                    fontSize: 14,
+                }}
+            />
+        </ScrollView>
     );
 }
 
@@ -415,8 +378,7 @@ const event = {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        height: "100%",
         width: "100%",
-        alignItems: "center",
+        height: "300%",
     },
 });

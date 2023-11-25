@@ -1,7 +1,7 @@
-import { GestureResponderEvent, TouchableOpacity, ViewStyle } from "react-native";
+import { GestureResponderEvent, TextStyle, TouchableOpacity, ViewStyle } from "react-native";
 import { GetColors, Text } from "./themed";
 
-export default function Button({ reference, placeholder, style }: { style?: ViewStyle,placeholder: string, reference: ((event: GestureResponderEvent) => void) }) {
+export default function Button({ reference, placeholder, style, textStyle }: { style?: ViewStyle, textStyle?: TextStyle, placeholder: any, reference: ((event: GestureResponderEvent) => void) }) {
     const { textColor, backgroundColor } = GetColors();
 
     return (
