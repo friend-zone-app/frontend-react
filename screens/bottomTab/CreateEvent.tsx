@@ -13,6 +13,7 @@ import * as Linking from "expo-linking";
 import Button from "../../components/button";
 import Toast from "react-native-root-toast";
 import selfieUrl, { generateSelfieSequence } from "../../constants/selfieUrl";
+import { Camera, CameraType } from "expo-camera";
 
 export default function CreateEvent({
     navigation,
@@ -64,6 +65,9 @@ export default function CreateEvent({
             setAddress(locationData?.name || address);
         }
     }, [called, loading, error, data]);
+
+    const [type, setType] = useState(CameraType.back);
+    const [permission, requestPermission] = Camera.useCameraPermissions();
 
     return (
         <ScrollView
