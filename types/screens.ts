@@ -22,6 +22,7 @@ export type RootStackParamList = {
   NotFound: undefined;
   Authentication: NavigatorScreenParams<AuthStackParamList> | undefined;
   Splash: undefined;
+  Camera: undefined;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =

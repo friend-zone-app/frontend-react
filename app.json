@@ -48,11 +48,14 @@
         }
       ],
       [
-        "expo-camera",
+        "react-native-vision-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera."
+          "cameraPermissionText": "Allow $(PRODUCT_NAME) to access to your Camera."
         }
       ]
+    ],
+    "plugins": [
+      "react-native-vision-camera"
     ]
   }
 }

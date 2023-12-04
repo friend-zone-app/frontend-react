@@ -8,6 +8,7 @@ const settingDataInstance = new MMKVLoader().initialize();
 interface UserSetting {
     colorMode: "light" | "dark" | "system",
     location: boolean,
+    cameraDeviceId?: string
 }
 
 export default function useUserLocalStorage() {

@@ -13,7 +13,8 @@ import * as Linking from "expo-linking";
 import Button from "../../components/button";
 import Toast from "react-native-root-toast";
 import selfieUrl, { generateSelfieSequence } from "../../constants/selfieUrl";
-import { Camera, CameraType } from "expo-camera";
+import DropDownMenu from "../../hooks/useDropDownMenu";
+import useDropDownMenu from "../../hooks/useDropDownMenu";
 
 export default function CreateEvent({
     navigation,
@@ -22,19 +23,30 @@ export default function CreateEvent({
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
-    const [typeOpen, setTypeOpen] = useState(false);
-    const [typeValue, setTypeValue] = useState<EventType>(
-        EventType.CELEBRATION
-    );
-    const [typeItems, setTypeItems] = useState([
-        { label: "School", value: "SCHOOL" },
-        { label: "Work", value: "WORK" },
-        { label: "Party", value: "Party" },
-        { label: "Festival", value: "FESTIVAL" },
-        { label: "Date", value: "DATE" },
-        { label: "Birthday", value: "BIRTHDAY" },
-        { label: "Celebration", value: "CELEBRATION" },
-    ]);
+    const { component: DropDownMenu, typeOpen, typeValue, typeItems } = useDropDownMenu({
+        items: [
+            { label: "School", value: "SCHOOL" },
+            { label: "Work", value: "WORK" },
+            { label: "Party", value: "Party" },
+            { label: "Festival", value: "FESTIVAL" },
+            { label: "Date", value: "DATE" },
+            { label: "Birthday", value: "BIRTHDAY" },
+            { label: "Celebration", value: "CELEBRATION" },
+        ],
+        placeholder: "Event Type",
+        defaultState: EventType.CELEBRATION,
+        style: {
+            zIndex: 1,
+        },
+        textStyle: {
+            fontSize: 16,
+            fontWeight: "500",
+        },
+        dropDownContainerStyle: {
+            maxHeight: "400%",
+        }
+    })
+
     const { accessToken } = useUserLocalStorage().token;
     const [addressExist, setAddressExist] = useState(false);
     const [findAddress, { loading, error, data, called, refetch }] =
@@ -46,7 +58,7 @@ export default function CreateEvent({
             },
         });
     const [locationData, setLocationData] = useState<Location>();
-    const [selfieSequence] = useState(generateSelfieSequence())
+    const [selfieSequence] = useState(generateSelfieSequence());
 
     useEffect(() => {
         if (!called) return;
@@ -65,9 +77,6 @@ export default function CreateEvent({
             setAddress(locationData?.name || address);
         }
     }, [called, loading, error, data]);
-
-    const [type, setType] = useState(CameraType.back);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
 
     return (
         <ScrollView
@@ -131,13 +140,14 @@ export default function CreateEvent({
                     <Button
                         placeholder={""}
                         reference={() => {
-                            console.log("call camera");
+                            navigation.navigate("Camera")
                         }}
                         style={{
                             backgroundColor,
                             borderWidth: 4,
                             aspectRatio: 1 / 1,
                             borderRadius: 100,
+                            borderColor: textColor
                         }}
                     />
                 </View>
@@ -204,26 +214,7 @@ export default function CreateEvent({
                     marginTop: 20,
                 }}
             >
-                <DropDownPicker
-                    style={{
-                        zIndex: 1,
-                    }}
-                    textStyle={{
-                        fontSize: 16,
-                        fontWeight: "500",
-                    }}
-                    placeholder="Event type"
-                    open={typeOpen}
-                    value={typeValue}
-                    items={typeItems}
-                    setOpen={setTypeOpen}
-                    setValue={setTypeValue}
-                    setItems={setTypeItems}
-                    listMode="SCROLLVIEW"
-                    dropDownContainerStyle={{
-                        maxHeight: "400%",
-                    }}
-                />
+                <DropDownMenu/>
             </View>
             <View
                 style={{
@@ -263,7 +254,7 @@ export default function CreateEvent({
                         onChangeText={setAddress}
                         onSubmitEditing={() => {
                             if (!address) return;
-                            if(address === "/here") {
+                            if (address === "/here") {
                                 setAddressExist(true);
                             }
                             if (!called && address.length > 4)
@@ -280,8 +271,8 @@ export default function CreateEvent({
                         }}
                         onPressIn={() => {
                             Toast.show("Type /here for current location :)", {
-                                duration: Toast.durations.SHORT
-                            })
+                                duration: Toast.durations.SHORT,
+                            });
                         }}
                     />
                     <Button
@@ -358,7 +349,6 @@ export default function CreateEvent({
                     alignItems: "center",
                     padding: 10,
                 }}
-
                 textStyle={{
                     width: "100%",
                     textAlign: "center",

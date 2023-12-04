@@ -7,13 +7,12 @@ import {
 import { Text, View, GetColors } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
 import Button from "../../components/button";
-import { useContext, useEffect, useState } from "react";
-import { RegisterContext } from "../../constants/RegisterContext";
-import DropDownPicker from "react-native-dropdown-picker";
+import { useEffect, useState } from "react";
 import { UserPrivacy } from "../../types/user";
 import useUserLocalStorage from "../../hooks/useLocalStorage";
 import * as Location from "expo-location";
 import Toast from "react-native-root-toast";
+import useDropDownMenu from "../../hooks/useDropDownMenu";
 
 export default function ConfigurationScreen({
     navigation,
@@ -25,23 +24,29 @@ export default function ConfigurationScreen({
     const [triggerLocationReq, setTriggerLoc] = useState(false);
     const [oneTimeTrigger, setOneTimeTrigger] = useState(false);
     const { userSetting, setUserSetting } = useUserLocalStorage().setting;
-    const [locPermOpen, setlocPermOpen] = useState(false);
-    const [locPermvalue, setlocPermValue] = useState<UserPrivacy>(
-        UserPrivacy.FRIENDS
-    );
-    const [locPermItems, setlocPermItems] = useState([
-        { label: "Friends", value: "FRIENDS" },
-        { label: "Nobody", value: "NOBODY" },
-    ]);
-    const [eventPermOpen, setEventPermOpen] = useState(false);
-    const [eventPermvalue, setEventPermValue] = useState<UserPrivacy>(
-        UserPrivacy.FRIENDS
-    );
-    const [eventPermItems, setEventPermItems] = useState([
-        { label: "Friends", value: "FRIENDS" },
-        { label: "Everyone", value: "EVERYONE" },
-        { label: "Nobody", value: "NOBODY" },
-    ]);
+    const {component: DropDownMenuLoc, typeOpen: locPermOpen, typeItems: locPermItems, typeValue: locPermvalue} = useDropDownMenu({
+        placeholder: "",
+        defaultState: UserPrivacy.FRIENDS,
+        items: [
+            { label: "Friends", value: "FRIENDS" },
+            { label: "Nobody", value: "NOBODY" },
+        ],
+        style: {
+            zIndex: 1
+        }
+    })
+    const {component: DropDownMenuEvent, typeOpen: eventPermOpen, typeItems: eventPermItems, typeValue: eventPermvalue} = useDropDownMenu({
+        placeholder: "",
+        defaultState: UserPrivacy.FRIENDS,
+        items: [
+            { label: "Friends", value: "FRIENDS" },
+            { label: "Everyone", value: "EVERYONE" },
+            { label: "Nobody", value: "NOBODY" },
+        ],
+        style: {
+            zIndex: 1
+        }
+    })
 
     useEffect(() => {
         async function reqLoc() {
@@ -148,18 +153,7 @@ export default function ConfigurationScreen({
                             marginTop: 10,
                         }}
                     >
-                        <DropDownPicker
-                            style={{
-                                zIndex: 1,
-                            }}
-                            open={locPermOpen}
-                            value={locPermvalue}
-                            items={locPermItems}
-                            setOpen={setlocPermOpen}
-                            setValue={setlocPermValue}
-                            setItems={setlocPermItems}
-                            onPress={() => setTriggerLoc(true)}
-                        />
+                        <DropDownMenuLoc/>
                     </View>
                 </View>
                 <View
@@ -199,14 +193,7 @@ export default function ConfigurationScreen({
                             marginTop: 10,
                         }}
                     >
-                        <DropDownPicker
-                            open={eventPermOpen}
-                            value={eventPermvalue}
-                            items={eventPermItems}
-                            setOpen={setEventPermOpen}
-                            setValue={setEventPermValue}
-                            setItems={setEventPermItems}
-                        />
+                        <DropDownMenuEvent/>
                     </View>
                 </View>
                 <View
