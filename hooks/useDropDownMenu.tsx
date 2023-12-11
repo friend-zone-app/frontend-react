@@ -23,7 +23,10 @@ export default function useDropDownMenu({
     return {
         component: () => {
             return <DropDownPicker
-            style={style}
+            style={{
+                ...style,
+                zIndex: 1,
+            }}
             textStyle={textStyle}
             placeholder={placeholder}
             open={typeOpen}

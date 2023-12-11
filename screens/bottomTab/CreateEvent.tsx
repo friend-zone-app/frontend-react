@@ -1,20 +1,34 @@
-import { useEffect, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import TextInput2 from "../../components/textInput";
 import { View, Text, GetColors } from "../../components/themed";
 import { RootTabScreenProps } from "../../types/screens";
-import { Image, Platform, ScrollView, StyleSheet } from "react-native";
+import { Image, Platform, Pressable, ScrollView, StyleSheet } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { EventType } from "../../types/user";
 import { useLazyQuery } from "@apollo/client";
-import { GET_LOCATION_BY_ADDRESS } from "../../graphql/queries/getLocation";
+import {
+    GET_LOCATION_BY_ADDRESS,
+    GET_LOCATION_BY_POINT,
+} from "../../graphql/queries/getLocation";
 import useUserLocalStorage from "../../hooks/useLocalStorage";
 import { Location } from "../../types/user";
 import * as Linking from "expo-linking";
 import Button from "../../components/button";
 import Toast from "react-native-root-toast";
 import selfieUrl, { generateSelfieSequence } from "../../constants/selfieUrl";
-import DropDownMenu from "../../hooks/useDropDownMenu";
+import * as GeoLocation from "expo-location";
 import useDropDownMenu from "../../hooks/useDropDownMenu";
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import { useIsFocused } from "@react-navigation/native";
+import {
+    CameraDevice,
+    Camera,
+    useCameraFormat,
+} from "react-native-vision-camera";
+import useCamera from "../../hooks/useCamera";
+import { useIsForeground } from "../../hooks/useIsForeground";
+import { usePreferredCameraDevice } from "../../hooks/usePreferredCameraDevice";
+import UploadImage from "../../lib/upload";
 
 export default function CreateEvent({
     navigation,
@@ -23,7 +37,14 @@ export default function CreateEvent({
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
-    const { component: DropDownMenu, typeOpen, typeValue, typeItems } = useDropDownMenu({
+    const [startTakingPic, setStartTakingPic] = useState<null | boolean>(false);
+    const [picUrl, setPicUrl] = useState("");
+    const {
+        component: DropDownMenu,
+        typeOpen,
+        typeValue,
+        typeItems,
+    } = useDropDownMenu({
         items: [
             { label: "School", value: "SCHOOL" },
             { label: "Work", value: "WORK" },
@@ -44,8 +65,8 @@ export default function CreateEvent({
         },
         dropDownContainerStyle: {
             maxHeight: "400%",
-        }
-    })
+        },
+    });
 
     const { accessToken } = useUserLocalStorage().token;
     const [addressExist, setAddressExist] = useState(false);
@@ -57,6 +78,16 @@ export default function CreateEvent({
                 },
             },
         });
+    const [
+        findPoint,
+        { loading: loading2, error: error2, data: data2, called: called2 },
+    ] = useLazyQuery(GET_LOCATION_BY_POINT, {
+        context: {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        },
+    });
     const [locationData, setLocationData] = useState<Location>();
     const [selfieSequence] = useState(generateSelfieSequence());
 
@@ -78,11 +109,45 @@ export default function CreateEvent({
         }
     }, [called, loading, error, data]);
 
+    useEffect(() => {
+        if (!called2) return;
+        if (loading2) return;
+        if (error2) {
+            console.error(error2);
+            Toast.show("Failed to get location, restart the app!", {
+                duration: Toast.durations.LONG,
+            });
+            return;
+        }
+
+        if (data2.getLocationDataByPoint) {
+            setAddressExist(true);
+            setLocationData(data2.getLocationDataByPoint);
+            setAddress(locationData?.name || address);
+        }
+    }, [called2, loading2, error2, data2]);
+
+    const [cameraPosition, setCameraPosition] = useState<"front" | "back">(
+        "back"
+    );
+    const [preferredDevice] = usePreferredCameraDevice();
+
+    let device = useCamera({ camera: cameraPosition });
+
+    const camera = useRef<Camera>(null);
+
+    if (
+        preferredDevice != null &&
+        preferredDevice.position === cameraPosition
+    ) {
+        device = preferredDevice;
+    }
+
     return (
         <ScrollView
             contentContainerStyle={{
                 alignItems: "center",
-                height: "150%",
+                height: "165%",
             }}
             style={{
                 ...styles.container,
@@ -99,26 +164,38 @@ export default function CreateEvent({
                 <View
                     style={{
                         maxWidth: "90%",
-                        maxHeight: 332,
+                        maxHeight: "60%",
                         flex: 1,
-                        aspectRatio: 1 / 1,
+                        aspectRatio: 4 / 3,
                         borderWidth: 3,
                         borderColor: textColor,
-                        borderRadius: 18,
                         marginTop: 30,
                         backgroundColor: textColor,
+                        flexDirection: "row",
                     }}
                 >
-                    <Image
-                        source={selfieUrl[selfieSequence]}
-                        style={{
-                            maxWidth: "100%",
-                            maxHeight: "100%",
-                            borderRadius: 18,
-                            objectFit: "contain",
-                            backgroundColor: "#000",
-                        }}
-                    />
+                    <Pressable style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                borderRadius: 1,
+                                backgroundColor: "#000",
+                                display: startTakingPic ? "none" : "flex"
+                            }} onPress={() => {setStartTakingPic(true)}} disabled={startTakingPic == null}>
+                        <Image
+                            source={selfieUrl[selfieSequence]}
+                            style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                borderRadius: 1,
+                                objectFit: "cover",
+                                backgroundColor: "#000",
+                            }}
+                        />
+                    </Pressable>
+                    
+                    {device && startTakingPic ? (
+                        <CameraComponent device={device} camera={camera} />
+                    ) : null}
                 </View>
                 <Text
                     style={{
@@ -127,9 +204,10 @@ export default function CreateEvent({
                         fontWeight: "500",
                         fontSize: 18,
                         marginTop: 6,
+                        maxWidth: "90%"
                     }}
                 >
-                    This is a pose suggestion for today.
+                    { startTakingPic != null ? `This is a pose suggestion for today.${"\n"} Tap on the canvas to start taking picture` : "Scroll down, to fill event's information and share it to your friends."}
                 </Text>
                 <View
                     style={{
@@ -139,15 +217,29 @@ export default function CreateEvent({
                 >
                     <Button
                         placeholder={""}
-                        reference={() => {
-                            navigation.navigate("Camera")
+                        reference={async () => {
+                            const file = await camera.current?.takePhoto();
+                            if (!file) return;
+                            const res = await CameraRoll.save(
+                                `file://${file.path}`,
+                                {
+                                    type: "photo",
+                                }
+                            );
+                            const result = await fetch(`file://${file.path}`);
+                            const data = await result.blob();
+                            console.log(result.url, result.type, result.headers);
+                            const url = await UploadImage(data, accessToken || "");
+                            console.log(url)
+                            setPicUrl(url || "");
+                            setStartTakingPic(null);
                         }}
                         style={{
                             backgroundColor,
                             borderWidth: 4,
                             aspectRatio: 1 / 1,
                             borderRadius: 100,
-                            borderColor: textColor
+                            borderColor: textColor,
                         }}
                     />
                 </View>
@@ -214,7 +306,7 @@ export default function CreateEvent({
                     marginTop: 20,
                 }}
             >
-                <DropDownMenu/>
+                <DropDownMenu />
             </View>
             <View
                 style={{
@@ -252,21 +344,36 @@ export default function CreateEvent({
                             fontWeight: "500",
                         }}
                         onChangeText={setAddress}
-                        onSubmitEditing={() => {
+                        onSubmitEditing={async () => {
                             if (!address) return;
                             if (address === "/here") {
-                                setAddressExist(true);
-                            }
-                            if (!called && address.length > 4)
-                                findAddress({
+                                const location =
+                                    await GeoLocation.getCurrentPositionAsync(
+                                        {}
+                                    );
+                                setAddress(
+                                    location.coords.latitude +
+                                        "," +
+                                        location.coords.longitude
+                                );
+                                findPoint({
                                     variables: {
-                                        address,
+                                        lat: location.coords.latitude.toString(),
+                                        long: location.coords.longitude.toString(),
                                     },
                                 });
-                            else {
-                                refetch({
-                                    address,
-                                });
+                            } else {
+                                if (!called && address.length > 4)
+                                    findAddress({
+                                        variables: {
+                                            address,
+                                        },
+                                    });
+                                else {
+                                    refetch({
+                                        address,
+                                    });
+                                }
                             }
                         }}
                         onPressIn={() => {
@@ -310,6 +417,7 @@ export default function CreateEvent({
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    zIndex: -1
                 }}
             >
                 <Text
@@ -348,6 +456,7 @@ export default function CreateEvent({
                     justifyContent: "center",
                     alignItems: "center",
                     padding: 10,
+                    zIndex: -1
                 }}
                 textStyle={{
                     width: "100%",
@@ -359,15 +468,49 @@ export default function CreateEvent({
     );
 }
 
-const event = {
-    title: "Hello World!",
-    description: "This is the first post",
-    location: [1.2345, 0.45567],
-    startsAt: "2023-11-16T08:45:12.123456789Z",
-    endsAt: "2023-11-16T09:45:12.123456789Z",
-    inviters: [],
-    type: "SCHOOL",
-};
+function CameraComponent({
+    device,
+    camera,
+}: {
+    device: CameraDevice;
+    camera: RefObject<Camera>;
+}) {
+    const format = useCameraFormat(device, [
+        { photoAspectRatio: 4 / 3 },
+        { photoResolution: "max" },
+    ]);
+
+    const isFocussed = useIsFocused();
+    const isForeground = useIsForeground();
+    const isActive = isFocussed && isForeground;
+
+    useEffect(() => {
+        console.log(device);
+    }, []);
+
+    return (
+        <Camera
+            style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: 18,
+                zIndex: -1,
+            }}
+            ref={camera}
+            device={device}
+            isActive={isActive}
+            format={format}
+            photoHdr={true}
+            lowLightBoost={device.supportsLowLightBoost && true}
+            video={false}
+            photo={true}
+        />
+    );
+}
+
+/*
+
+*/
 
 const styles = StyleSheet.create({
     container: {

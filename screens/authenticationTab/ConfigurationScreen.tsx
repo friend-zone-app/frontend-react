@@ -1,15 +1,12 @@
 import {
     StyleSheet,
     SafeAreaView,
-    TouchableOpacity,
-    Switch,
 } from "react-native";
 import { Text, View, GetColors } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
 import Button from "../../components/button";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { UserPrivacy } from "../../types/user";
-import useUserLocalStorage from "../../hooks/useLocalStorage";
 import * as Location from "expo-location";
 import Toast from "react-native-root-toast";
 import useDropDownMenu from "../../hooks/useDropDownMenu";
@@ -21,9 +18,6 @@ export default function ConfigurationScreen({
     const { backgroundColor } =
         GetColors();
     const username = route.params.username;
-    const [triggerLocationReq, setTriggerLoc] = useState(false);
-    const [oneTimeTrigger, setOneTimeTrigger] = useState(false);
-    const { userSetting, setUserSetting } = useUserLocalStorage().setting;
     const {component: DropDownMenuLoc, typeOpen: locPermOpen, typeItems: locPermItems, typeValue: locPermvalue} = useDropDownMenu({
         placeholder: "",
         defaultState: UserPrivacy.FRIENDS,
@@ -50,7 +44,6 @@ export default function ConfigurationScreen({
 
     useEffect(() => {
         async function reqLoc() {
-            setOneTimeTrigger(true);
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
                 Toast.show(
@@ -71,8 +64,8 @@ export default function ConfigurationScreen({
                 return;
             }
         }
-        if (triggerLocationReq && !oneTimeTrigger && !userSetting.location) reqLoc();
-    }, [triggerLocationReq, userSetting]);
+        reqLoc();
+    }, []);
 
     return (
         <SafeAreaView

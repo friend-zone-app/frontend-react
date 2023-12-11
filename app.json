@@ -20,11 +20,17 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.friendzone.app"
+      "bundleIdentifier": "com.friendzone.app",
+      "ios": {
+        "infoPlist": {
+          "NSCameraUsageDescription": "This app uses the camera to capture your momments."
+        }
+      }
     },
     "android": {
       "userInterfaceStyle": "automatic",
-      "package": "com.friendzone.app"
+      "package": "com.friendzone.app",
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
     "extra": {
       "eas": {
@@ -50,7 +56,8 @@
       [
         "react-native-vision-camera",
         {
-          "cameraPermissionText": "Allow $(PRODUCT_NAME) to access to your Camera."
+          "cameraPermissionText": "Allow $(PRODUCT_NAME) to access to your Camera.",
+          "disableFrameProcessors": true
         }
       ]
     ],
