@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.friend-zone.app</string>
+          <string>com.friendzone.app</string>
         </array>
       </dict>
     </array>

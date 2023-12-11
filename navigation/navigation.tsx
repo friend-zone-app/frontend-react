@@ -4,12 +4,11 @@ import {
     NavigationContainer,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useEffect, useMemo, useReducer, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ColorSchemeName } from "react-native/types";
 import { RootStackParamList } from "../types/screens";
 import BottomTabNavigator from "./BottomTab/BottomTab";
 import NotFoundScreen from "../screens/root/NotFoundScreen";
-import SettingModal from "../screens/root/SettingModal";
 import AuthStackNavigator from "./Authentication/Authentication";
 import { AuthContext } from "../constants/AuthContext";
 import useUserLocalStorage from "../hooks/useLocalStorage";
@@ -22,9 +21,10 @@ import {
     useMutation,
 } from "@apollo/client";
 import { GET_SELF } from "../graphql/queries/getUser";
-import Splash from "../components/splash";
+import Splash from "../screens/root/SplashScreen";
 import { setContext } from "@apollo/client/link/context";
 import { REFRESH_TOKEN } from "../graphql/mutation/requestAuthentication";
+import Camera from "../screens/root/Camera";
 
 export default function Navigation({
     colorScheme,
@@ -204,6 +204,11 @@ function RootNavigator() {
                             name="NotFound"
                             component={NotFoundScreen}
                             options={{ title: "Oops!" }}
+                        />
+                        <Stack.Screen
+                            name="Camera"
+                            component={Camera}
+                            options={{title: ""}}
                         />
                     </>
                 ) : (

@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from '../components/themed';
+import { Text } from '../../components/themed';
 import { StyleSheet } from 'react-native';
 
 

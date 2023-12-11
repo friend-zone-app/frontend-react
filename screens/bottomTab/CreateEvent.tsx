@@ -1,16 +1,34 @@
-import { useEffect, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import TextInput2 from "../../components/textInput";
 import { View, Text, GetColors } from "../../components/themed";
 import { RootTabScreenProps } from "../../types/screens";
-import { Platform, StyleSheet } from "react-native";
+import { Image, Platform, Pressable, ScrollView, StyleSheet } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { EventType } from "../../types/user";
 import { useLazyQuery } from "@apollo/client";
-import { GET_LOCATION_BY_ADDRESS } from "../../graphql/queries/getLocation";
+import {
+    GET_LOCATION_BY_ADDRESS,
+    GET_LOCATION_BY_POINT,
+} from "../../graphql/queries/getLocation";
 import useUserLocalStorage from "../../hooks/useLocalStorage";
 import { Location } from "../../types/user";
 import * as Linking from "expo-linking";
 import Button from "../../components/button";
+import Toast from "react-native-root-toast";
+import selfieUrl, { generateSelfieSequence } from "../../constants/selfieUrl";
+import * as GeoLocation from "expo-location";
+import useDropDownMenu from "../../hooks/useDropDownMenu";
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import { useIsFocused } from "@react-navigation/native";
+import {
+    CameraDevice,
+    Camera,
+    useCameraFormat,
+} from "react-native-vision-camera";
+import useCamera from "../../hooks/useCamera";
+import { useIsForeground } from "../../hooks/useIsForeground";
+import { usePreferredCameraDevice } from "../../hooks/usePreferredCameraDevice";
+import UploadImage from "../../lib/upload";
 
 export default function CreateEvent({
     navigation,
@@ -19,73 +37,221 @@ export default function CreateEvent({
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
-    const [typeOpen, setTypeOpen] = useState(false);
-    const [typeValue, setTypeValue] = useState<EventType>(
-        EventType.CELEBRATION
-    );
-    const [typeItems, setTypeItems] = useState([
-        { label: "School", value: "SCHOOL" },
-        { label: "Work", value: "WORK" },
-        { label: "Party", value: "Party" },
-        { label: "Festival", value: "FESTIVAL" },
-        { label: "Date", value: "DATE" },
-        { label: "Birthday", value: "BIRTHDAY" },
-        { label: "Celebration", value: "CELEBRATION" },
-    ]);
+    const [startTakingPic, setStartTakingPic] = useState<null | boolean>(false);
+    const [picUrl, setPicUrl] = useState("");
+    const {
+        component: DropDownMenu,
+        typeOpen,
+        typeValue,
+        typeItems,
+    } = useDropDownMenu({
+        items: [
+            { label: "School", value: "SCHOOL" },
+            { label: "Work", value: "WORK" },
+            { label: "Party", value: "Party" },
+            { label: "Festival", value: "FESTIVAL" },
+            { label: "Date", value: "DATE" },
+            { label: "Birthday", value: "BIRTHDAY" },
+            { label: "Celebration", value: "CELEBRATION" },
+        ],
+        placeholder: "Event Type",
+        defaultState: EventType.CELEBRATION,
+        style: {
+            zIndex: 1,
+        },
+        textStyle: {
+            fontSize: 16,
+            fontWeight: "500",
+        },
+        dropDownContainerStyle: {
+            maxHeight: "400%",
+        },
+    });
+
     const { accessToken } = useUserLocalStorage().token;
     const [addressExist, setAddressExist] = useState(false);
-    const [findAddress, { loading, error, data, called, refetch }] = useLazyQuery(
-        GET_LOCATION_BY_ADDRESS,
-        {
+    const [findAddress, { loading, error, data, called, refetch }] =
+        useLazyQuery(GET_LOCATION_BY_ADDRESS, {
             context: {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },
             },
-        }
-    );
+        });
+    const [
+        findPoint,
+        { loading: loading2, error: error2, data: data2, called: called2 },
+    ] = useLazyQuery(GET_LOCATION_BY_POINT, {
+        context: {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        },
+    });
     const [locationData, setLocationData] = useState<Location>();
+    const [selfieSequence] = useState(generateSelfieSequence());
 
     useEffect(() => {
         if (!called) return;
         if (loading) return;
         if (error) {
             console.error(error);
+            Toast.show("Failed to get location, restart the app!", {
+                duration: Toast.durations.LONG,
+            });
             return;
         }
 
         if (data.getLocationDataByAddress.name.length > 2) {
             setAddressExist(true);
             setLocationData(data.getLocationDataByAddress);
-            setAddress(locationData?.name || address)
+            setAddress(locationData?.name || address);
         }
-    }, [called, loading, error, data, locationData, addressExist]);
+    }, [called, loading, error, data]);
+
+    useEffect(() => {
+        if (!called2) return;
+        if (loading2) return;
+        if (error2) {
+            console.error(error2);
+            Toast.show("Failed to get location, restart the app!", {
+                duration: Toast.durations.LONG,
+            });
+            return;
+        }
+
+        if (data2.getLocationDataByPoint) {
+            setAddressExist(true);
+            setLocationData(data2.getLocationDataByPoint);
+            setAddress(locationData?.name || address);
+        }
+    }, [called2, loading2, error2, data2]);
+
+    const [cameraPosition, setCameraPosition] = useState<"front" | "back">(
+        "back"
+    );
+    const [preferredDevice] = usePreferredCameraDevice();
+
+    let device = useCamera({ camera: cameraPosition });
+
+    const camera = useRef<Camera>(null);
+
+    if (
+        preferredDevice != null &&
+        preferredDevice.position === cameraPosition
+    ) {
+        device = preferredDevice;
+    }
 
     return (
-        <View
+        <ScrollView
+            contentContainerStyle={{
+                alignItems: "center",
+                height: "165%",
+            }}
             style={{
                 ...styles.container,
-                backgroundColor: backgroundColor,
+                backgroundColor,
             }}
         >
-            <Text
+            <View
                 style={{
-                    fontSize: 30,
-                    fontWeight: "600",
+                    minHeight: "60%",
+                    justifyContent: "center",
+                    alignItems: "center",
                 }}
             >
-                Add new event 📌
-            </Text>
-
+                <View
+                    style={{
+                        maxWidth: "90%",
+                        maxHeight: "60%",
+                        flex: 1,
+                        aspectRatio: 4 / 3,
+                        borderWidth: 3,
+                        borderColor: textColor,
+                        marginTop: 30,
+                        backgroundColor: textColor,
+                        flexDirection: "row",
+                    }}
+                >
+                    <Pressable style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                borderRadius: 1,
+                                backgroundColor: "#000",
+                                display: startTakingPic ? "none" : "flex"
+                            }} onPress={() => {setStartTakingPic(true)}} disabled={startTakingPic == null}>
+                        <Image
+                            source={selfieUrl[selfieSequence]}
+                            style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                borderRadius: 1,
+                                objectFit: "cover",
+                                backgroundColor: "#000",
+                            }}
+                        />
+                    </Pressable>
+                    
+                    {device && startTakingPic ? (
+                        <CameraComponent device={device} camera={camera} />
+                    ) : null}
+                </View>
+                <Text
+                    style={{
+                        textAlign: "center",
+                        color: secondaryColor,
+                        fontWeight: "500",
+                        fontSize: 18,
+                        marginTop: 6,
+                        maxWidth: "90%"
+                    }}
+                >
+                    { startTakingPic != null ? `This is a pose suggestion for today.${"\n"} Tap on the canvas to start taking picture` : "Scroll down, to fill event's information and share it to your friends."}
+                </Text>
+                <View
+                    style={{
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <Button
+                        placeholder={""}
+                        reference={async () => {
+                            const file = await camera.current?.takePhoto();
+                            if (!file) return;
+                            const res = await CameraRoll.save(
+                                `file://${file.path}`,
+                                {
+                                    type: "photo",
+                                }
+                            );
+                            const result = await fetch(`file://${file.path}`);
+                            const data = await result.blob();
+                            console.log(result.url, result.type, result.headers);
+                            const url = await UploadImage(data, accessToken || "");
+                            console.log(url)
+                            setPicUrl(url || "");
+                            setStartTakingPic(null);
+                        }}
+                        style={{
+                            backgroundColor,
+                            borderWidth: 4,
+                            aspectRatio: 1 / 1,
+                            borderRadius: 100,
+                            borderColor: textColor,
+                        }}
+                    />
+                </View>
+            </View>
             <View
                 style={{
                     margin: 10,
                     width: "90%",
-                    borderWidth: 1,
+                    borderWidth: 2,
                     borderColor: secondaryColor,
                     borderRadius: 10,
                     justifyContent: "center",
-                    marginTop: 32,
                 }}
             >
                 <TextInput2
@@ -100,7 +266,10 @@ export default function CreateEvent({
                     placeholderTextColor={textColor}
                     autoCapitalize="sentences"
                     value={title}
-                    placeholderStyle={{ fontSize: 20, color: secondaryColor }}
+                    placeholderStyle={{
+                        fontSize: 20,
+                        color: secondaryColor,
+                    }}
                     onChangeText={setTitle}
                 />
                 <TextInput2
@@ -109,7 +278,7 @@ export default function CreateEvent({
                         color: textColor,
                         fontWeight: "500",
                         borderTopColor: secondaryColor,
-                        borderWidth: 1,
+                        borderWidth: 2,
                         padding: 5,
                         paddingLeft: 10,
                         borderBottomLeftRadius: 10,
@@ -117,6 +286,7 @@ export default function CreateEvent({
                         borderLeftWidth: 0,
                         borderRightWidth: 0,
                         borderBottomWidth: 0,
+                        marginBottom: 14,
                     }}
                     placeholder="Notes"
                     placeholderTextColor={textColor}
@@ -130,54 +300,21 @@ export default function CreateEvent({
                     onChangeText={setDescription}
                 />
             </View>
-
             <View
                 style={{
                     maxWidth: "90%",
                     marginTop: 20,
                 }}
             >
-                <Text
-                    style={{
-                        fontSize: 20,
-                        fontWeight: "600",
-                        margin: 10,
-                    }}
-                >
-                    Event type
-                </Text>
-                <DropDownPicker
-                    style={{
-                        zIndex: 1,
-                    }}
-                    textStyle={{
-                        fontSize: 16,
-                        fontWeight: "500",
-                    }}
-                    placeholder="Event type"
-                    open={typeOpen}
-                    value={typeValue}
-                    items={typeItems}
-                    setOpen={setTypeOpen}
-                    setValue={setTypeValue}
-                    setItems={setTypeItems}
-                />
+                <DropDownMenu />
             </View>
             <View
                 style={{
                     width: "90%",
                     marginTop: 20,
-                    zIndex: -1
+                    zIndex: -1,
                 }}
             >
-                <Text
-                    style={{
-                        fontSize: 20,
-                        fontWeight: "600",
-                    }}
-                >
-                    Find your event's location
-                </Text>
                 <View
                     style={{
                         flexDirection: "row",
@@ -190,86 +327,195 @@ export default function CreateEvent({
                             fontWeight: "500",
                             borderColor: secondaryColor,
                             borderRadius: 10,
-                            borderWidth: 1,
+                            borderWidth: 2,
                             padding: 5,
                             paddingLeft: 10,
                             paddingVertical: 10,
                             marginTop: 10,
                             flex: 1,
                         }}
-                        placeholder="Address"
+                        placeholder="Your events address"
                         placeholderTextColor={textColor}
                         autoCapitalize="sentences"
-                        value={
-                            address
-                        }
+                        value={address}
                         placeholderStyle={{
                             fontSize: 16,
                             color: secondaryColor,
-                            fontWeight: "400",
+                            fontWeight: "500",
                         }}
                         onChangeText={setAddress}
-                        onSubmitEditing={() => {
-                            if (!called && address.length > 4)
-                                findAddress({
+                        onSubmitEditing={async () => {
+                            if (!address) return;
+                            if (address === "/here") {
+                                const location =
+                                    await GeoLocation.getCurrentPositionAsync(
+                                        {}
+                                    );
+                                setAddress(
+                                    location.coords.latitude +
+                                        "," +
+                                        location.coords.longitude
+                                );
+                                findPoint({
                                     variables: {
-                                        address,
+                                        lat: location.coords.latitude.toString(),
+                                        long: location.coords.longitude.toString(),
                                     },
                                 });
-                            else {
-                                refetch({
+                            } else {
+                                if (!called && address.length > 4)
+                                    findAddress({
+                                        variables: {
+                                            address,
+                                        },
+                                    });
+                                else {
+                                    refetch({
                                         address,
-                                    },
-                                )
+                                    });
+                                }
                             }
                         }}
+                        onPressIn={() => {
+                            Toast.show("Type /here for current location :)", {
+                                duration: Toast.durations.SHORT,
+                            });
+                        }}
                     />
-                    <Button placeholder="Map" reference={() => {
-                        if(!locationData) return;
-                        const coors = locationData.point.coordinates;
-                        console.log(coors);
-                        const scheme = Platform.select({
-                            ios: "maps://0,0?q=",
-                            android: "geo:0,0?q=",
-                        });
-                        const latLng = `${coors[0]},${coors[1]}`;
-                        const label = title || "Your FriendZone event!";
-                        const url = Platform.select({
-                            ios: `${scheme}${label}@${latLng}`,
-                            android: `${scheme}${latLng}(${label})`,
-                        });
-
-                        console.log(url);
-
-                        url ? Linking.openURL(url) : null;
-                    }} style={{
-                        minWidth: 10,
-                        width: "auto",
-                        justifyContent: "center",
-                        marginLeft: 5,
-                        display: addressExist ? "flex" : "none"
-                    }} />
+                    <Button
+                        placeholder="Map"
+                        reference={() => {
+                            if (!locationData) return;
+                            const coors = locationData.point.coordinates;
+                            console.log(coors);
+                            const scheme = Platform.select({
+                                ios: "maps://0,0?q=",
+                                android: "geo:0,0?q=",
+                            });
+                            const latLng = `${coors[0]},${coors[1]}`;
+                            const label = title || "Your FriendZone event!";
+                            const url = Platform.select({
+                                ios: `${scheme}${label}@${latLng}`,
+                                android: `${scheme}${latLng}(${label})`,
+                            });
+                            url ? Linking.openURL(url) : null;
+                        }}
+                        style={{
+                            minWidth: 10,
+                            width: "auto",
+                            justifyContent: "center",
+                            marginLeft: 5,
+                            display: addressExist ? "flex" : "none",
+                        }}
+                    />
                 </View>
             </View>
-        </View>
+            <View
+                style={{
+                    maxWidth: "90%",
+                    marginTop: 24,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    zIndex: -1
+                }}
+            >
+                <Text
+                    style={{
+                        fontSize: 16,
+                        fontWeight: "500",
+                        width: "78%",
+                        borderWidth: 2,
+                        borderRadius: 10,
+                        padding: 10,
+                        marginRight: "2%",
+                    }}
+                >
+                    Add your friends
+                </Text>
+                <Button
+                    placeholder={"find"}
+                    reference={() => {}}
+                    style={{
+                        margin: 0,
+                        marginTop: 0,
+                        padding: 10,
+                    }}
+                    textStyle={{
+                        fontSize: 16,
+                        margin: 0,
+                    }}
+                />
+            </View>
+            <Button
+                placeholder={"Straight to the internet!"}
+                reference={() => {}}
+                style={{
+                    marginTop: 32,
+                    width: "90%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: 10,
+                    zIndex: -1
+                }}
+                textStyle={{
+                    width: "100%",
+                    textAlign: "center",
+                    fontSize: 14,
+                }}
+            />
+        </ScrollView>
     );
 }
 
-const event = {
-    title: "Hello World!",
-    description: "This is the first post",
-    location: [1.2345, 0.45567],
-    startsAt: "2023-11-16T08:45:12.123456789Z",
-    endsAt: "2023-11-16T09:45:12.123456789Z",
-    inviters: [],
-    type: "SCHOOL",
-};
+function CameraComponent({
+    device,
+    camera,
+}: {
+    device: CameraDevice;
+    camera: RefObject<Camera>;
+}) {
+    const format = useCameraFormat(device, [
+        { photoAspectRatio: 4 / 3 },
+        { photoResolution: "max" },
+    ]);
+
+    const isFocussed = useIsFocused();
+    const isForeground = useIsForeground();
+    const isActive = isFocussed && isForeground;
+
+    useEffect(() => {
+        console.log(device);
+    }, []);
+
+    return (
+        <Camera
+            style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: 18,
+                zIndex: -1,
+            }}
+            ref={camera}
+            device={device}
+            isActive={isActive}
+            format={format}
+            photoHdr={true}
+            lowLightBoost={device.supportsLowLightBoost && true}
+            video={false}
+            photo={true}
+        />
+    );
+}
+
+/*
+
+*/
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        height: "100%",
         width: "100%",
-        alignItems: "center",
+        height: "300%",
     },
 });

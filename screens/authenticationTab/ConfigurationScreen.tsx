@@ -1,19 +1,15 @@
 import {
     StyleSheet,
     SafeAreaView,
-    TouchableOpacity,
-    Switch,
 } from "react-native";
 import { Text, View, GetColors } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";
 import Button from "../../components/button";
-import { useContext, useEffect, useState } from "react";
-import { RegisterContext } from "../../constants/RegisterContext";
-import DropDownPicker from "react-native-dropdown-picker";
+import { useEffect } from "react";
 import { UserPrivacy } from "../../types/user";
-import useUserLocalStorage from "../../hooks/useLocalStorage";
 import * as Location from "expo-location";
 import Toast from "react-native-root-toast";
+import useDropDownMenu from "../../hooks/useDropDownMenu";
 
 export default function ConfigurationScreen({
     navigation,
@@ -22,30 +18,32 @@ export default function ConfigurationScreen({
     const { backgroundColor } =
         GetColors();
     const username = route.params.username;
-    const [triggerLocationReq, setTriggerLoc] = useState(false);
-    const [oneTimeTrigger, setOneTimeTrigger] = useState(false);
-    const { userSetting, setUserSetting } = useUserLocalStorage().setting;
-    const [locPermOpen, setlocPermOpen] = useState(false);
-    const [locPermvalue, setlocPermValue] = useState<UserPrivacy>(
-        UserPrivacy.FRIENDS
-    );
-    const [locPermItems, setlocPermItems] = useState([
-        { label: "Friends", value: "FRIENDS" },
-        { label: "Nobody", value: "NOBODY" },
-    ]);
-    const [eventPermOpen, setEventPermOpen] = useState(false);
-    const [eventPermvalue, setEventPermValue] = useState<UserPrivacy>(
-        UserPrivacy.FRIENDS
-    );
-    const [eventPermItems, setEventPermItems] = useState([
-        { label: "Friends", value: "FRIENDS" },
-        { label: "Everyone", value: "EVERYONE" },
-        { label: "Nobody", value: "NOBODY" },
-    ]);
+    const {component: DropDownMenuLoc, typeOpen: locPermOpen, typeItems: locPermItems, typeValue: locPermvalue} = useDropDownMenu({
+        placeholder: "",
+        defaultState: UserPrivacy.FRIENDS,
+        items: [
+            { label: "Friends", value: "FRIENDS" },
+            { label: "Nobody", value: "NOBODY" },
+        ],
+        style: {
+            zIndex: 1
+        }
+    })
+    const {component: DropDownMenuEvent, typeOpen: eventPermOpen, typeItems: eventPermItems, typeValue: eventPermvalue} = useDropDownMenu({
+        placeholder: "",
+        defaultState: UserPrivacy.FRIENDS,
+        items: [
+            { label: "Friends", value: "FRIENDS" },
+            { label: "Everyone", value: "EVERYONE" },
+            { label: "Nobody", value: "NOBODY" },
+        ],
+        style: {
+            zIndex: 1
+        }
+    })
 
     useEffect(() => {
         async function reqLoc() {
-            setOneTimeTrigger(true);
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
                 Toast.show(
@@ -66,8 +64,8 @@ export default function ConfigurationScreen({
                 return;
             }
         }
-        if (triggerLocationReq && !oneTimeTrigger && !userSetting.location) reqLoc();
-    }, [triggerLocationReq, userSetting]);
+        reqLoc();
+    }, []);
 
     return (
         <SafeAreaView
@@ -148,19 +146,7 @@ export default function ConfigurationScreen({
                             marginTop: 10,
                         }}
                     >
-                        <DropDownPicker
-                            style={{
-                                zIndex: 1,
-                            }}
-                            open={locPermOpen}
-                            value={locPermvalue}
-                            items={locPermItems}
-                            setOpen={setlocPermOpen}
-                            setValue={setlocPermValue}
-                            setItems={setlocPermItems}
-                            onPress={() => setTriggerLoc(true)}
-                            disabled={!userSetting.location && triggerLocationReq ? true : false}
-                        />
+                        <DropDownMenuLoc/>
                     </View>
                 </View>
                 <View
@@ -191,7 +177,7 @@ export default function ConfigurationScreen({
                             }}
                         >
                             You can choose who invites you to events: just
-                            friends or everyone nearby (friend-zone/festivals).
+                            friends or everyone nearby (friendzone/festivals).
                         </Text>
                     </View>
                     <View
@@ -200,14 +186,7 @@ export default function ConfigurationScreen({
                             marginTop: 10,
                         }}
                     >
-                        <DropDownPicker
-                            open={eventPermOpen}
-                            value={eventPermvalue}
-                            items={eventPermItems}
-                            setOpen={setEventPermOpen}
-                            setValue={setEventPermValue}
-                            setItems={setEventPermItems}
-                        />
+                        <DropDownMenuEvent/>
                     </View>
                 </View>
                 <View

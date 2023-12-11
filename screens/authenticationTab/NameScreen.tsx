@@ -1,9 +1,8 @@
 import { AuthStackScreenProps } from "../../types/screens";
 import { GetColors, Text, View } from "../../components/themed";
 import { StyleSheet } from "react-native";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import TextInput2 from "../../components/textInput";
-import { RegisterContext } from "../../constants/RegisterContext";
 import Button from "../../components/button";
 
 export default function NameScreen({
@@ -11,7 +10,6 @@ export default function NameScreen({
 }: AuthStackScreenProps<"NameScreen">) {
     const { textColor, secondaryColor, backgroundColor } = GetColors();
     const [username, setUsername] = useState("");
-    const { setUsername: setUsernameContext } = useContext(RegisterContext);
 
     return (
         <View style={styles.contain}>
@@ -52,8 +50,7 @@ export default function NameScreen({
             </View>
             <Button
                 reference={() => {
-                    setUsernameContext(username);
-                    navigation.push("SettingScreen", {
+                    navigation.push("ConfigurationScreen", {
                         username
                     });
                 }}
