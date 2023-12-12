@@ -1,7 +1,6 @@
 import {
     StyleSheet,
     SafeAreaView,
-    TouchableOpacity,
 } from "react-native";
 import { Text, View, GetColors } from "../../components/themed";
 import { AuthStackScreenProps } from "../../types/screens";

@@ -1,9 +1,8 @@
 import { AuthStackScreenProps } from "../../types/screens";
 import { GetColors, Text, View } from "../../components/themed";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import TextInput2 from "../../components/textInput";
-import { RegisterContext } from "../../constants/RegisterContext";
 import { useLazyQuery } from "@apollo/client";
 import { REQUEST_AUTHENTICATION } from "../../graphql/queries/requestAuthentication";
 import Toast from "react-native-root-toast";
@@ -22,7 +21,9 @@ export default function EmailScreen({
 
     useEffect(() => {
         if (error && called) {
+            console.log(error.message)
             const queryError = error?.graphQLErrors[0];
+            if(!queryError) return
             Toast.show(
                 queryError.message ||
                     "Failed to request email authentication, please try again later!",

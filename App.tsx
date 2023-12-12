@@ -13,7 +13,6 @@ import {
 } from "@apollo/client";
 import { RootSiblingParent } from "react-native-root-siblings";
 import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
-import useUserLocalStorage from "./hooks/useLocalStorage";
 
 if (process.env.NODE_ENV !== "production") {
     loadDevMessages();
@@ -21,7 +20,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const httpLink = createHttpLink({
-    uri: process.env.EXPO_PUBLIC_GRAPHQL_URI,
+    uri: "http://192.168.178.38:3000/query",
 });
 
 const graphQLClient = new ApolloClient({
