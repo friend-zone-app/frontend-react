@@ -11,8 +11,6 @@ export default function WelcomeScreen({
 }: AuthStackScreenProps<"WelcomeScreen">) {
     const { textColor, backgroundColor } = GetColors();
 
-    console.log(process.env.PUBLIC_EXPO_GRAPHQL_URI)
-
     return (
         <SafeAreaView
             style={{
