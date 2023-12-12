@@ -2,10 +2,16 @@ import { RefObject, useEffect, useRef, useState } from "react";
 import TextInput2 from "../../components/textInput";
 import { View, Text, GetColors } from "../../components/themed";
 import { RootTabScreenProps } from "../../types/screens";
-import { Image, Platform, Pressable, ScrollView, StyleSheet } from "react-native";
+import {
+    Image,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+} from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { EventType } from "../../types/user";
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import {
     GET_LOCATION_BY_ADDRESS,
     GET_LOCATION_BY_POINT,
@@ -29,6 +35,7 @@ import useCamera from "../../hooks/useCamera";
 import { useIsForeground } from "../../hooks/useIsForeground";
 import { usePreferredCameraDevice } from "../../hooks/usePreferredCameraDevice";
 import UploadImage from "../../lib/upload";
+import { CREATE_EVENT } from "../../graphql/mutation/events";
 
 export default function CreateEvent({
     navigation,
@@ -39,12 +46,7 @@ export default function CreateEvent({
     const [address, setAddress] = useState("");
     const [startTakingPic, setStartTakingPic] = useState<null | boolean>(false);
     const [picUrl, setPicUrl] = useState("");
-    const {
-        component: DropDownMenu,
-        typeOpen,
-        typeValue,
-        typeItems,
-    } = useDropDownMenu({
+    const { component: DropDownMenu, typeValue } = useDropDownMenu({
         items: [
             { label: "School", value: "SCHOOL" },
             { label: "Work", value: "WORK" },
@@ -143,6 +145,22 @@ export default function CreateEvent({
         device = preferredDevice;
     }
 
+    const [
+        createEvent,
+        {
+            loading: createLoading,
+            error: createError,
+            data: createData,
+            called: createCalled,
+        },
+    ] = useMutation(CREATE_EVENT, {
+        context: {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        },
+    });
+
     return (
         <ScrollView
             contentContainerStyle={{
@@ -174,13 +192,19 @@ export default function CreateEvent({
                         flexDirection: "row",
                     }}
                 >
-                    <Pressable style={{
-                                maxWidth: "100%",
-                                maxHeight: "100%",
-                                borderRadius: 1,
-                                backgroundColor: "#000",
-                                display: startTakingPic ? "none" : "flex"
-                            }} onPress={() => {setStartTakingPic(true)}} disabled={startTakingPic == null}>
+                    <Pressable
+                        style={{
+                            maxWidth: "100%",
+                            maxHeight: "100%",
+                            borderRadius: 1,
+                            backgroundColor: "#000",
+                            display: startTakingPic ? "none" : "flex",
+                        }}
+                        onPress={() => {
+                            setStartTakingPic(true);
+                        }}
+                        disabled={startTakingPic == null}
+                    >
                         <Image
                             source={selfieUrl[selfieSequence]}
                             style={{
@@ -192,7 +216,7 @@ export default function CreateEvent({
                             }}
                         />
                     </Pressable>
-                    
+
                     {device && startTakingPic ? (
                         <CameraComponent device={device} camera={camera} />
                     ) : null}
@@ -204,10 +228,12 @@ export default function CreateEvent({
                         fontWeight: "500",
                         fontSize: 18,
                         marginTop: 6,
-                        maxWidth: "90%"
+                        maxWidth: "90%",
                     }}
                 >
-                    { startTakingPic != null ? `This is a pose suggestion for today.${"\n"} Tap on the canvas to start taking picture` : "Scroll down, to fill event's information and share it to your friends."}
+                    {startTakingPic != null
+                        ? `This is a pose suggestion for today.${"\n"} Tap on the canvas to start taking picture`
+                        : "Scroll down, to fill event's information and share it to your friends."}
                 </Text>
                 <View
                     style={{
@@ -228,9 +254,10 @@ export default function CreateEvent({
                             );
                             const result = await fetch(`file://${file.path}`);
                             const data = await result.blob();
-                            console.log(result.url, result.type, result.headers);
-                            const url = await UploadImage(data, accessToken || "");
-                            console.log(url)
+                            const url = await UploadImage(
+                                data,
+                                accessToken || ""
+                            );
                             setPicUrl(url || "");
                             setStartTakingPic(null);
                         }}
@@ -417,7 +444,7 @@ export default function CreateEvent({
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    zIndex: -1
+                    zIndex: -1,
                 }}
             >
                 <Text
@@ -449,14 +476,45 @@ export default function CreateEvent({
             </View>
             <Button
                 placeholder={"Straight to the internet!"}
-                reference={() => {}}
+                reference={() => {
+                    console.log({
+                        title,
+                        description,
+                        location: locationData
+                            ? [
+                                  locationData.point.coordinates[0],
+                                  locationData.point.coordinates[1],
+                              ]
+                            : [],
+                        inviters: [],
+                        type: typeValue,
+                        image: picUrl,
+                    })
+                    createEvent({
+                        variables: {
+                            Event: {
+                                title,
+                                description,
+                                location: locationData
+                                    ? [
+                                          locationData.point.coordinates[0],
+                                          locationData.point.coordinates[1],
+                                      ]
+                                    : [0, 0],
+                                inviters: [],
+                                type: typeValue,
+                                image: picUrl,
+                            },
+                        },
+                    });
+                }}
                 style={{
                     marginTop: 32,
                     width: "90%",
                     justifyContent: "center",
                     alignItems: "center",
                     padding: 10,
-                    zIndex: -1
+                    zIndex: -1,
                 }}
                 textStyle={{
                     width: "100%",

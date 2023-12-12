@@ -17,14 +17,12 @@ import {
     createHttpLink,
     useApolloClient,
     useLazyQuery,
-    DocumentNode,
     useMutation,
 } from "@apollo/client";
 import { GET_SELF } from "../graphql/queries/getUser";
 import Splash from "../screens/root/SplashScreen";
 import { setContext } from "@apollo/client/link/context";
 import { REFRESH_TOKEN } from "../graphql/mutation/requestAuthentication";
-import Camera from "../screens/root/Camera";
 
 export default function Navigation({
     colorScheme,
@@ -138,7 +136,7 @@ function RootNavigator() {
                 },
             });
         }
-    }, [doRefresh, refreshCalled, refreshLoading, refreshError, refreshData]);
+    }, [doRefresh]);
 
     const authContext = useMemo(
         () => ({
@@ -204,11 +202,6 @@ function RootNavigator() {
                             name="NotFound"
                             component={NotFoundScreen}
                             options={{ title: "Oops!" }}
-                        />
-                        <Stack.Screen
-                            name="Camera"
-                            component={Camera}
-                            options={{title: ""}}
                         />
                     </>
                 ) : (
