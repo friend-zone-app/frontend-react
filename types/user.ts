@@ -15,6 +15,18 @@ export interface AddBadgeInput {
     enabled: boolean;
 }
 
+export interface Event {
+    _id: string;
+    author: string;
+    title: string;
+    description: string;
+    location: Point;
+    createdAt: Date;
+    inviters: Invite[];
+    type: EventType;
+    privacy: EventPrivacy;
+    image: string;
+}
 export interface Badge {
     _id: string;
     type: BadgeType;
@@ -118,11 +130,11 @@ export interface User {
     biography?: string | null;
     avatar?: string | null;
     createdAt: Date;
-    events?: string[];
-    posts?: string[];
-    friendsReq?: FriendReq[];
-    friendList?: string[];
-    badges?: Badge[];
+    events: string[];
+    posts: string[];
+    friendsReq: FriendReq[];
+    friendList: string[];
+    badges: Badge[];
     level: number;
     setting: Setting;
 }

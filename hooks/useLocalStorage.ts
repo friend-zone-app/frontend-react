@@ -14,7 +14,7 @@ interface UserSetting {
 export default function useUserLocalStorage() {
     const [accessToken, setAccessToken] = useMMKVStorage<string | null>('accessToken', userCredentialsInstance, null);
     const [refreshToken, setRefreshToken] = useMMKVStorage<string | null>('refreshToken', userCredentialsInstance, null);
-    const [userData, setUserData] = useMMKVStorage<User | null>('userData', userDataInstance, null)
+    const [userData, setUserData] = useMMKVStorage<User>('userData', userDataInstance)
     const [userSetting, setUserSetting] = useMMKVStorage<UserSetting>('userSetting', settingDataInstance, { colorMode: "system", location: false, })
 
     return {
