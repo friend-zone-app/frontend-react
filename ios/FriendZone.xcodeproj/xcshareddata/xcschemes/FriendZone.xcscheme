@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Friend Zone.app"
-               BlueprintName = "Friend Zone"
-               ReferencedContainer = "container:Friend Zone.xcodeproj">
+               BuildableName = "FriendZone.app"
+               BlueprintName = "FriendZone"
+               ReferencedContainer = "container:FriendZone.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "PartiesTests.xctest"
-               BlueprintName = "PartiesTests"
-               ReferencedContainer = "container:Friend Zone.xcodeproj">
+               BuildableName = "FriendZoneTests.xctest"
+               BlueprintName = "FriendZoneTests"
+               ReferencedContainer = "container:FriendZone.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Friend Zone.app"
-            BlueprintName = "Friend Zone"
-            ReferencedContainer = "container:Friend Zone.xcodeproj">
+            BuildableName = "FriendZone.app"
+            BlueprintName = "FriendZone"
+            ReferencedContainer = "container:FriendZone.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Friend Zone.app"
-            BlueprintName = "Friend Zone"
-            ReferencedContainer = "container:Friend Zone.xcodeproj">
+            BuildableName = "FriendZone.app"
+            BlueprintName = "FriendZone"
+            ReferencedContainer = "container:FriendZone.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -11,19 +11,31 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "userInterfaceStyle": "automatic",
     "ios": {
       "userInterfaceStyle": "automatic",
       "config": {
         "usesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.friendzone.app",
-      "ios": {
-        "infoPlist": {
-          "NSCameraUsageDescription": "This app uses the camera to capture your momments."
+      "bundleIdentifier": "com.thinh-friendzone.test",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to capture your momments.",
+        "NSAppTransportSecurity": {
+          "NSExceptionDomains": {
+            "192.168.178.2": {
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true
+            },
+            "192.168.178.38": {
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true
+            },
+            "127.0.0.1": {
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true
+            }
+          }
+        },
+        "NSAllowsArbitraryLoads": {
+          "NSAllowsArbitraryLoads": true
         }
       }
     },
@@ -42,7 +54,7 @@
         "expo-build-properties",
         {
           "ios": {
-            "deploymentTarget": "16.1"
+            "deploymentTarget": "13.0"
           }
         }
       ],
@@ -61,8 +73,6 @@
         }
       ]
     ],
-    "plugins": [
-      "react-native-vision-camera"
-    ]
+    "plugins": ["react-native-vision-camera"]
   }
 }
