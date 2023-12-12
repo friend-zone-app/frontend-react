@@ -18,7 +18,26 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.friendzone.app"
+      "bundleIdentifier": "com.thinh-friendzone.test",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to capture your momments.",
+        "NSAppTransportSecurity": {
+          "NSExceptionDomains": {
+            "192.168.178.2": {
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true
+            },
+            "192.168.178.38": {
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true
+            },
+            "127.0.0.1": {
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true
+            }
+          }
+        },
+        "NSAllowsArbitraryLoads": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "userInterfaceStyle": "automatic",
