@@ -35,7 +35,8 @@ export default function MainScreen({
     });
 
     useEffect(() => {
-        if (!eventsData && refresh) return;
+        if(error) console.log(error)
+        if (!eventsData || refresh) return;
         console.log(eventsData, error);
 		setRefresh(false);
         setEvents(eventsData.getUserEvents);

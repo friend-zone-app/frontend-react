@@ -20,7 +20,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const httpLink = createHttpLink({
-    uri: "http://192.168.178.38:3000/query",
+    uri: "http://192.168.178.2:3000/query",
 });
 
 const graphQLClient = new ApolloClient({

@@ -136,7 +136,7 @@ function RootNavigator() {
                 },
             });
         }
-    }, [doRefresh]);
+    }, [doRefresh, refreshCalled, refreshData, refreshError, refreshLoading]);
 
     const authContext = useMemo(
         () => ({
