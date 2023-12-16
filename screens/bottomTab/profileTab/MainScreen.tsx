@@ -171,10 +171,6 @@ export default function MainScreen({
 			>
 				{events
 					? events?.map((event, key) => {
-							console.log(
-								process.env.EXPO_PUBLIC_CDN_URI +
-									(event?.image || "")
-							);
 							return (
 								<View
 									key={key}
@@ -192,8 +188,7 @@ export default function MainScreen({
 										}}
 										source={{
 											uri:
-												process.env
-													.EXPO_PUBLIC_CDN_URI +
+												"https://cdn-worker.txzje.workers.dev/" +
 												(event?.image || ""),
 											method: "GET",
 											headers: {
@@ -249,7 +244,7 @@ export default function MainScreen({
 														userData?.avatar
 															? {
 																	uri: userData.avatar,
-															  }
+															}
 															: require("../../../assets/avatar_placeholder.png")
 													}
 												/>
