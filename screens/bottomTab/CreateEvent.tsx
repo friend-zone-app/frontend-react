@@ -23,21 +23,10 @@ import Toast from "react-native-root-toast";
 import selfieUrl, { generateSelfieSequence } from "../../constants/selfieUrl";
 import * as GeoLocation from "expo-location";
 import useDropDownMenu from "../../hooks/useDropDownMenu";
-import { CameraRoll } from "@react-native-camera-roll/camera-roll";
-import { useIsFocused } from "@react-navigation/native";
-import {
-	CameraDevice,
-	Camera,
-	useCameraFormat,
-	Templates,
-} from "react-native-vision-camera";
-import useCamera from "../../hooks/useCamera";
-import { useIsForeground } from "../../hooks/useIsForeground";
-import { usePreferredCameraDevice } from "../../hooks/usePreferredCameraDevice";
-import UploadImage from "../../lib/upload";
+import { Camera } from "react-native-vision-camera";
 import { CREATE_EVENT } from "../../graphql/mutation/events";
-import Reanimated from "react-native-reanimated";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import CameraComponent from "./_camera/Camera";
+import CameraButton from "./_camera/CameraButton";
 
 export default function CreateEvent({
 	navigation,
@@ -48,6 +37,8 @@ export default function CreateEvent({
 	const [address, setAddress] = useState("");
 	const [startTakingPic, setStartTakingPic] = useState<null | boolean>(false);
 	const [picUrl, setPicUrl] = useState("");
+	const camera = useRef<Camera>(null);
+
 	const { component: DropDownMenu, typeValue } = useDropDownMenu({
 		items: [
 			{ label: "School", value: "SCHOOL" },
@@ -131,22 +122,6 @@ export default function CreateEvent({
 		}
 	}, [called2, loading2, error2, data2]);
 
-	const [cameraPosition, setCameraPosition] = useState<"front" | "back">(
-		"front"
-	);
-	const [preferredDevice] = usePreferredCameraDevice();
-
-	let device = useCamera({ camera: cameraPosition });
-
-	const camera = useRef<Camera>(null);
-
-	if (
-		preferredDevice != null &&
-		preferredDevice.position === cameraPosition
-	) {
-		device = preferredDevice;
-	}
-
 	const [
 		createEvent,
 		{
@@ -219,14 +194,7 @@ export default function CreateEvent({
 						/>
 					</Pressable>
 
-					{device && startTakingPic ? (
-						<CameraComponent
-							device={device}
-							camera={camera}
-							cameraPosition={cameraPosition}
-							setCameraPosition={setCameraPosition}
-						/>
-					) : null}
+					{startTakingPic ? <CameraComponent camera={camera}/> : null}
 				</View>
 				<Text
 					style={{
@@ -242,38 +210,7 @@ export default function CreateEvent({
 						? `This is a pose suggestion for today.${"\n"} Tap on the canvas to start taking picture`
 						: "Scroll down, to fill event's information and share it to your friends."}
 				</Text>
-				<View
-					style={{
-						justifyContent: "center",
-						alignItems: "center",
-					}}
-				>
-					<Button
-						placeholder={""}
-						reference={async () => {
-							const file = await camera.current?.takePhoto();
-							if (!file) return;
-							const result = await fetch(`file://${file.path}`);
-							const data = await result.blob();
-							const url = await UploadImage(
-								data,
-								accessToken || ""
-							);
-							setPicUrl(url || "");
-							setStartTakingPic(null);
-						}}
-						style={{
-							backgroundColor,
-							borderWidth: 4,
-							aspectRatio: 3 / 5,
-							borderRadius: 100,
-							borderColor: textColor,
-							width: 30,
-							height: 50,
-							padding: 0,
-						}}
-					/>
-				</View>
+				<CameraButton camera={camera} setPicUrl={setPicUrl} setStartTakingPic={setStartTakingPic} />
 			</View>
 			<View
 				style={{
@@ -534,73 +471,6 @@ export default function CreateEvent({
 		</ScrollView>
 	);
 }
-
-const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
-
-function CameraComponent({
-	device,
-	camera,
-	cameraPosition,
-	setCameraPosition,
-}: {
-	device: CameraDevice;
-	camera: RefObject<Camera>;
-	cameraPosition: "back" | "front";
-	setCameraPosition: Function;
-}) {
-	const format = useCameraFormat(device, [
-		{
-			photoHdr: true,
-			photoResolution: { width: 1200, height: 1600 },
-		},
-	]);
-
-	const isFocussed = useIsFocused();
-	const isForeground = useIsForeground();
-	const isActive = isFocussed && isForeground;
-
-	useEffect(() => {
-		console.log(device.position, device.supportsFocus);
-	}, []);
-
-	return (
-		<GestureHandlerRootView>
-			<Reanimated.View
-				style={{
-					position: "absolute",
-					left: 0,
-					right: 0,
-					top: 0,
-					bottom: 0,
-					borderRadius: 18,
-				}}
-			>
-				<ReanimatedCamera
-					style={{
-						width: "100%",
-						height: "100%",
-						zIndex: -1,
-						margin: 0,
-						padding: 0,
-						borderRadius: 18,
-					}}
-					ref={camera}
-					device={device}
-					isActive={isActive}
-					format={format}
-					photoHdr={true}
-					lowLightBoost={device.supportsLowLightBoost && true}
-					video={false}
-					photo={true}
-				/>
-			</Reanimated.View>
-		</GestureHandlerRootView>
-	);
-}
-
-/*
-
-*/
 
 const styles = StyleSheet.create({
 	container: {

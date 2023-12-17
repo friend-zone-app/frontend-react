@@ -10,5 +10,11 @@ export default function useCamera({ camera }: { camera: "back" | "front" }) {
         }
     }, [hasPermission])
 
-    return useCameraDevice(camera);
+    return useCameraDevice(camera, {
+        physicalDevices: [
+          'ultra-wide-angle-camera',
+          'wide-angle-camera',
+          'telephoto-camera'
+        ]
+      });
 }

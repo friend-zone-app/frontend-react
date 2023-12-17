@@ -13,6 +13,7 @@ import {
 } from "@apollo/client";
 import { RootSiblingParent } from "react-native-root-siblings";
 import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 if (process.env.NODE_ENV !== "production") {
     loadDevMessages();
