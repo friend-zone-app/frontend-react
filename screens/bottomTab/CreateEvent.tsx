@@ -162,18 +162,19 @@ export default function CreateEvent({
 						maxHeight: "60%",
 						flex: 1,
 						aspectRatio: 4 / 3,
-						borderWidth: 3,
+						borderWidth: 5,
 						borderColor: textColor,
+						borderRadius: 18,
 						marginTop: 30,
-						backgroundColor,
 						flexDirection: "row",
+						backgroundColor: textColor
 					}}
 				>
 					<Pressable
 						style={{
 							maxWidth: "100%",
 							maxHeight: "100%",
-							borderRadius: 1,
+							borderRadius: 18,
 							backgroundColor: "#000",
 							display: startTakingPic ? "none" : "flex",
 						}}
@@ -187,7 +188,7 @@ export default function CreateEvent({
 							style={{
 								maxWidth: "100%",
 								maxHeight: "100%",
-								borderRadius: 1,
+								borderRadius: 18,
 								objectFit: "cover",
 								backgroundColor: "#000",
 							}}
