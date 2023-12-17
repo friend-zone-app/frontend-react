@@ -20,7 +20,7 @@
       },
       "bundleIdentifier": "com.thinh-friendzone.test",
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to capture your momments.",
+        "NSCameraUsageDescription": "Allow ${PRODUCT_NAME} to use your camera.",
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
             "192.168.178.2": {
@@ -36,7 +36,9 @@
         },
         "NSAllowsArbitraryLoads": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "NSPhotoLibraryAddUsageDescription": "Allow ${PRODUCT_NAME} to use your photos library.",
+        "NSPushNotifications": false
       }
     },
     "android": {
