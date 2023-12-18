@@ -9,6 +9,8 @@ export const GET_SELF_EVENTS = gql`
                 coordinates
             }
             image
+            description
+            createdAt
         }
     }
 `

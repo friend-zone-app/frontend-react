@@ -74,8 +74,6 @@
     <string>Allow $(PRODUCT_NAME) to access your location</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>Allow ${PRODUCT_NAME} to use your photos library.</string>
-    <key>NSPushNotification</key>
-    <false/>
     <key>NSPushNotifications</key>
     <false/>
     <key>UILaunchStoryboardName</key>

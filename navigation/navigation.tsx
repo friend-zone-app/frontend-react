@@ -93,8 +93,9 @@ function RootNavigator() {
 		setLoading(false);
 
 		if (queryError && queryCalled) {
+			console.log(queryError.message)
 			const errorMessage = queryError.graphQLErrors[0];
-			if (errorMessage.message.startsWith("[408]") && refreshToken) {
+			if (errorMessage.message && errorMessage.message.startsWith("[408]") && refreshToken) {
 				setDoRefresh(true);
 			} else {
 				tokenStorage.setAccessToken(null);

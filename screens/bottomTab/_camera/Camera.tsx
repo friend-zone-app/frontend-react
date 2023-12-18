@@ -1,5 +1,5 @@
 import { useIsFocused } from "@react-navigation/native";
-import { RefObject, useState, useEffect } from "react";
+import { RefObject, useState, useEffect, useCallback } from "react";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Camera, useCameraFormat } from "react-native-vision-camera";
 import { useIsForeground } from "../../../hooks/useIsForeground";
@@ -10,7 +10,7 @@ import Reanimated, {
 } from "react-native-reanimated";
 import useCamera from "../../../hooks/useCamera";
 import { usePreferredCameraDevice } from "../../../hooks/usePreferredCameraDevice";
-import { GetColors } from "../../../components/themed";
+import { GetColors, View } from "../../../components/themed";
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
@@ -38,7 +38,12 @@ export default function CameraComponent({
 	const format = useCameraFormat(device, [
 		{
 			photoHdr: true,
-			photoResolution: { width: 1200, height: 1600 },
+		},
+		{
+			photoResolution: { width: 2316, height: 3088 },
+		},
+		{
+			photoAspectRatio: 4 / 3,
 		},
 	]);
 	const zoom = useSharedValue(0);
@@ -64,6 +69,10 @@ export default function CameraComponent({
 		zoom.value = neutralZoom;
 	}, [neutralZoom, zoom]);
 
+	const onFlipCameraPressed = useCallback(() => {
+		setCameraPosition((p) => (p === "back" ? "front" : "back"));
+	}, []);
+
 	const pinch = Gesture.Pinch().onUpdate((event) => {
 		const scale = interpolate(
 			event.scale,
@@ -82,9 +91,11 @@ export default function CameraComponent({
 
 	const doubleTap = Gesture.Tap()
 		.numberOfTaps(2)
-		.onStart((event) => {
-			setCameraPosition((p) => (p === "back" ? "front" : "back"));
-		});
+		.onStart(
+			useCallback(() => {
+				onFlipCameraPressed();
+			}, [onFlipCameraPressed])
+		);
 
 	const composed = Gesture.Simultaneous(pinch, doubleTap);
 
@@ -97,33 +108,54 @@ export default function CameraComponent({
 					right: 0,
 					top: 0,
 					bottom: 0,
-					padding: 3,
-					backgroundColor:textColor
+					backgroundColor: textColor,
 				}}
 			>
-					<ReanimatedCamera
-						style={{
-							width: "100%",
-							height: "100%",
-							borderRadius: 18,
-							borderWidth: 100
-						}}
-						ref={camera}
-						device={device}
-						isActive={isActive}
-						format={format}
-						photoHdr={true}
-						lowLightBoost={
-							device.supportsLowLightBoost && enableNightMode
-						}
-						video={false}
-						photo={true}
-						orientation={"portrait"}
-						animatedProps={cameraAnimatedProps}
-						enableZoomGesture={false}
-						exposure={0}
-					/>
-				
+				<View
+					style={{
+						width: "100%",
+						height: "100%",
+						backgroundColor: "",
+						position: "absolute",
+						zIndex: 1,
+						borderRadius: 1,
+						borderColor: textColor,
+						borderWidth: 5,
+					}}
+				/>
+				<View
+					style={{
+						width: "100%",
+						height: "100%",
+						borderWidth: 6,
+						borderRadius: 18,
+						backgroundColor: "",
+						position: "absolute",
+						zIndex: 1,
+						borderColor: textColor,
+					}}
+				/>
+				<ReanimatedCamera
+					style={{
+						width: "100%",
+						height: "100%",
+						zIndex: -2,
+					}}
+					ref={camera}
+					device={device}
+					isActive={isActive}
+					format={format}
+					photoHdr={true}
+					lowLightBoost={
+						device.supportsLowLightBoost && enableNightMode
+					}
+					video={false}
+					photo={true}
+					orientation={"portrait"}
+					animatedProps={cameraAnimatedProps}
+					enableZoomGesture={false}
+					exposure={0}
+				/>
 			</Reanimated.View>
 		</GestureDetector>
 	);

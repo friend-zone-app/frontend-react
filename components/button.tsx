@@ -21,6 +21,7 @@ export default function Button({ reference, placeholder, style, textStyle }: { s
                     fontSize: 20,
                     color: backgroundColor,
                     fontWeight: "600",
+                    ...textStyle
                 }}
             >
                 {placeholder}

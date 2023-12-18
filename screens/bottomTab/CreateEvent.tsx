@@ -167,7 +167,10 @@ export default function CreateEvent({
 						borderRadius: 18,
 						marginTop: 30,
 						flexDirection: "row",
-						backgroundColor: textColor
+						backgroundColor: textColor,
+                        padding: 1,
+                        justifyContent: "center",
+                        alignItems: "center"
 					}}
 				>
 					<Pressable
@@ -175,7 +178,6 @@ export default function CreateEvent({
 							maxWidth: "100%",
 							maxHeight: "100%",
 							borderRadius: 18,
-							backgroundColor: "#000",
 							display: startTakingPic ? "none" : "flex",
 						}}
 						onPress={() => {
@@ -190,7 +192,6 @@ export default function CreateEvent({
 								maxHeight: "100%",
 								borderRadius: 18,
 								objectFit: "cover",
-								backgroundColor: "#000",
 							}}
 						/>
 					</Pressable>
@@ -431,7 +432,7 @@ export default function CreateEvent({
 							? [
 									locationData.point.coordinates[0],
 									locationData.point.coordinates[1],
-							  ]
+							]
 							: [],
 						inviters: [],
 						type: typeValue,
